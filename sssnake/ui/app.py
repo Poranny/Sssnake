@@ -2,8 +2,11 @@ from customtkinter import *
 from sssnake.utils.config import GAMECONFIG
 from sssnake.utils.theme_loader import get_theme_path
 from sssnake.ui.views import MainMenuView
+from sssnake.core.lifecycle_manager import AppLifecycleManager
 class App:
     def __init__(self):
+
+        self.lifecycle_manager = AppLifecycleManager()
 
         self.app = CTk()
         self.app.title(GAMECONFIG.title)
@@ -13,7 +16,7 @@ class App:
         set_appearance_mode('dark')
         set_default_color_theme(get_theme_path('Cobalt'))
 
-        self.main_menu = MainMenuView(self.app)
+        self.main_menu = MainMenuView(self.app, self.lifecycle_manager)
 
 
     def run(self):

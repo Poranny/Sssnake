@@ -1,0 +1,3 @@
+[submodule "external/ctk_theme_builder"]
+	path = external/ctk_theme_builder
+	url = https://github.com/avalon60/ctk_theme_builder.git

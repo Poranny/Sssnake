@@ -5,4 +5,4 @@ class GameConfig:
     title: str = "Sssnake"
 
 
-GAME = GameConfig()
+GAMECONFIG = GameConfig()

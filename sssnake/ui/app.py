@@ -1,12 +1,12 @@
 from customtkinter import *
-from sssnake.utils.config import GAME
+from sssnake.utils.config import GAMECONFIG
 from sssnake.utils.theme_loader import get_theme_path
 from sssnake.ui.views import MainMenuView
 class App:
     def __init__(self):
 
         self.app = CTk()
-        self.app.title(GAME.title)
+        self.app.title(GAMECONFIG.title)
         self.app.geometry("800x600")
         self.app.grid_columnconfigure(0, weight=1)
 

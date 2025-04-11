@@ -19,7 +19,8 @@ class EnvEngine:
             "head_position": (50, 50),
             "head_direction": 0,
             "segments_num" : 0,
-            "segments_positions": []
+            "segments_positions": [],
+            "candy_position" : (25, 25)
         }
 
         self.head_path = [self.state["head_position"]]

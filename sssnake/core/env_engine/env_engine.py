@@ -1,5 +1,6 @@
 import math
 from math import sin, cos, radians
+import random
 
 class EnvEngine:
 
@@ -10,6 +11,7 @@ class EnvEngine:
 
         self.head_path = []
         self.segment_length = 1.5
+        self.candy_distance = 2
 
     def reset_env(self, env_params) :
 
@@ -50,8 +52,9 @@ class EnvEngine:
 
         self.head_path.append(new_state["head_position"])
 
-        if new_state["head_direction"] > 180 and new_state["head_direction"] < 185 :
+        if self.met_candy(new_state) :
             self.add_segment(new_state)
+            new_state["candy_position"] = self.random_candy_pos()
 
         for i in range(new_state["segments_num"]):
             distance_behind_head = (i + 1) * self.segment_length
@@ -59,6 +62,19 @@ class EnvEngine:
 
         self.state = new_state
         self.notify_observers(self.state)
+
+    def random_candy_pos(self):
+        rand_x, rand_y = random.uniform(0, self.env_data["map_size_x"]), random.uniform(0, self.env_data["map_size_y"])
+        return (rand_x, rand_y)
+
+
+    def met_candy(self, state):
+
+        hpx, hpy = state["head_position"]
+        cpx, cpy = state["candy_position"]
+        distance = math.sqrt((hpx - cpx) ** 2 + (hpy - cpy) ** 2)
+
+        return distance < self.candy_distance
 
     def get_position_on_path(self, distance_behind_head):
 
@@ -90,6 +106,7 @@ class EnvEngine:
 
             last_dir_rad = radians(state["head_direction"])
             last_dir_x, last_dir_y = -sin(last_dir_rad), -cos(last_dir_rad)
+
         else :
             last_pos_x, last_pos_y = state["segments_positions"][-1]
 
@@ -98,6 +115,7 @@ class EnvEngine:
 
                 dx, dy = last_pos_x - head_pos_x, last_pos_y - head_pos_y
                 length = (dx ** 2 + dy ** 2) ** 0.5
+
                 if length > 0 :
                     last_dir_x, last_dir_y = (dx / length, dy / length)
                 else :
@@ -108,7 +126,10 @@ class EnvEngine:
 
                 dx, dy = last_pos_x - last2_pos_x, last_pos_y - last2_pos_y
                 length = (dx ** 2 + dy ** 2) ** 0.5
-                last_dir_x, last_dir_y = (dx / length, dy / length)
+                if length > 0:
+                    last_dir_x, last_dir_y = (dx / length, dy / length)
+                else:
+                    last_dir_x, last_dir_y = 1, 0
 
 
         state["segments_num"] += 1

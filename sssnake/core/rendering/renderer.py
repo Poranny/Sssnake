@@ -38,7 +38,7 @@ class Renderer:
 
         base = Image.new("RGBA", (self.high_res_width, self.high_res_height), "black")
 
-        self.base_bg = add_corners(base, rad=5 * self.supersample_factor, fill_color=self.parent_bg_col[1])
+        self.base_bg = add_corners(base, rad= 5 * self.supersample_factor, fill_color=self.parent_bg_col[1])
         self.offscreen.paste(self.base_bg, (0, 0))
         self.frame_buffer = ImageTk.PhotoImage(self.back_original_size())
 
@@ -52,9 +52,10 @@ class Renderer:
         self.clear()
 
         head_x, head_y = state["head_position"]
-
+        candy_x, candy_y = state["candy_position"]
         radius_head = 2
         radius_seg = 1
+        radius_candy = 1.5
 
         self.draw.ellipse(
             (
@@ -62,6 +63,16 @@ class Renderer:
                 (head_y - radius_head) * self.mult_y,
                 (head_x + radius_head) * self.mult_x,
                 (head_y + radius_head) * self.mult_y,
+            ),
+            fill="white"
+        )
+
+        self.draw.ellipse(
+            (
+                (candy_x - radius_candy) * self.mult_x,
+                (candy_y - radius_candy) * self.mult_y,
+                (candy_x + radius_candy) * self.mult_x,
+                (candy_y + radius_candy) * self.mult_y,
             ),
             fill="white"
         )

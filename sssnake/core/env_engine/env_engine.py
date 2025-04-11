@@ -12,6 +12,9 @@ class EnvEngine:
         self.head_path = []
         self.segment_length = 1.5
         self.candy_distance = 2
+        self.tail_hit_distance = 1
+
+        self.hit_done = False
 
     def reset_env(self, env_params) :
 
@@ -25,10 +28,12 @@ class EnvEngine:
             "candy_position" : (25, 25)
         }
 
+        self.hit_done = False
+
         self.head_path = [self.state["head_position"]]
 
     def step (self, action=None):
-        if self.env_data is None:
+        if self.hit_done or self.env_data is None:
             return
 
         new_state = self.state
@@ -52,6 +57,11 @@ class EnvEngine:
 
         self.head_path.append(new_state["head_position"])
 
+        if self.hit_anything(new_state) :
+            self.hit_done = True
+            self.notify_observers("Hit")
+            return
+
         if self.met_candy(new_state) :
             self.add_segment(new_state)
             new_state["candy_position"] = self.random_candy_pos()
@@ -63,13 +73,27 @@ class EnvEngine:
         self.state = new_state
         self.notify_observers(self.state)
 
+    def hit_anything(self, state):
+        hpx, hpy = state["head_position"]
+
+        hit = False
+
+        for segment_pos in state["segments_positions"]:
+            cpx, cpy = segment_pos
+            distance = math.sqrt((hpx - cpx) ** 2 + (hpy - cpy) ** 2)
+
+            if distance < self.tail_hit_distance :
+                hit = True
+                break
+
+        return hit
+
     def random_candy_pos(self):
         rand_x, rand_y = random.uniform(0, self.env_data["map_size_x"]), random.uniform(0, self.env_data["map_size_y"])
         return (rand_x, rand_y)
 
 
     def met_candy(self, state):
-
         hpx, hpy = state["head_position"]
         cpx, cpy = state["candy_position"]
         distance = math.sqrt((hpx - cpx) ** 2 + (hpy - cpy) ** 2)

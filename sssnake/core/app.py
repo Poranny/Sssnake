@@ -40,6 +40,7 @@ class App:
         self.controls = GameControls(self.app)
 
         self.game_loop = GameLoop(
+            master=self,
             app=self.app,
             env_engine=self.env,
             game_controls=self.controls,
@@ -51,11 +52,9 @@ class App:
 
         if isinstance(data, str) :
             if data == "Play" :
-                self.game_loop.start_game()
-                self.main_menu.game_started()
+                self.start_game()
             elif data == "Finish" :
-                self.game_loop.pause_game()
-                self.main_menu.game_ended()
+                self.stop_game()
             elif data == "Quit" :
                 self.lifecycle_manager.quit()
             else :
@@ -70,6 +69,14 @@ class App:
 
         else :
             print("Mainview command unknown")
+
+    def start_game (self) :
+        self.game_loop.start_game()
+        self.main_menu.game_started()
+
+    def stop_game(self) :
+        self.main_menu.game_ended()
+        self.game_loop.pause_game()
 
     def run(self):
         self.app.mainloop()

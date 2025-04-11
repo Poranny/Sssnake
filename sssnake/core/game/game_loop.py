@@ -1,13 +1,14 @@
 import threading
 
-
 class GameLoop:
-    def __init__(self, app, env_engine, game_controls, renderer):
+    def __init__(self, master, app, env_engine, game_controls, renderer):
 
         self.user_params = None
         self.app = app
         self.controls = game_controls
         self.renderer = renderer
+
+        self.master = master
 
         self.env = env_engine
         self.env.add_observer(self.on_env)
@@ -15,7 +16,7 @@ class GameLoop:
         self.play_on = False
         self.loop_id = None
 
-        self.fps = 60
+        self.fps = 5
         self.frame_ms = int(1000 / self.fps)
 
     def start_game(self):
@@ -47,7 +48,10 @@ class GameLoop:
         if isinstance(data, dict):
             threading.Thread(target=self.renderer.async_render, args=(data,), daemon=True).start()
         else :
-            print("Env command unknown")
+            if data == "Hit" :
+                self.master.stop_game()
+            else :
+                print("Env command unknown")
 
     def set_params (self, params):
         self.user_params = params

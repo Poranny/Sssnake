@@ -17,6 +17,5 @@ class GameControls :
     def on_key_release(self, event):
         self.current_action = None
 
-
     def get_action(self):
         return self.current_action

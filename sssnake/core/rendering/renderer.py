@@ -3,7 +3,7 @@ from PIL import Image, ImageDraw, ImageTk
 
 from sssnake.core.rendering.canvas_corners_masking import add_corners
 
-class GameRenderer:
+class Renderer:
     def __init__(self, width, height, supersample_factor=3):
         self.supersample_factor = supersample_factor
         self.width = width
@@ -68,7 +68,6 @@ class GameRenderer:
         return final_img
 
     def update_canvas(self, final_img):
-
         self.frame_buffer = ImageTk.PhotoImage(final_img)
 
         if self.canvas_id is not None:
@@ -83,3 +82,9 @@ class GameRenderer:
         self.frame_buffer = ImageTk.PhotoImage(final_img)
         if self.canvas_id is not None:
             self.canvas.itemconfig(self.canvas_id, image=self.frame_buffer)
+
+    def async_render(self, state: dict):
+
+        final_img = self.compute_render(state)
+
+        self.canvas.after(0, lambda: self.update_canvas(final_img))

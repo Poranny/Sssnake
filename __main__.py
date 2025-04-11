@@ -1,7 +1,4 @@
-import tkinter as tk
-from customtkinter import *
-from sssnake.utils.theme_loader import get_theme_path
-from sssnake.ui.app import App
+from sssnake.core.app import App
 
 def main():
     app = App()

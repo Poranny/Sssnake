@@ -33,7 +33,10 @@ class MainView(CTkFrame) :
         self.game_renderer.set_parent(self.game_frame)
 
     def play(self):
-        self.notify_observers('Play/finish')
+        if self.is_playing :
+            self.notify_observers('Finish')
+        else :
+            self.notify_observers('Play')
 
     def quit(self):
         self.notify_observers('Quit')
@@ -45,7 +48,7 @@ class MainView(CTkFrame) :
 
     def game_ended (self) :
         self.is_playing = False
-        self.btn_play.configure(text="Play")
+        self.btn_play.configure(text="Play!")
         self.btn_settings.configure(state=NORMAL)
 
     def open_settings(self) :

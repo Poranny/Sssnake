@@ -20,8 +20,8 @@ class GameRenderer:
         self.base_bg = None
 
         self.envinfo = {}
-        self.pos_mult_x = 1
-        self.pos_mult_y = 1
+        self.mult_x = 1
+        self.mult_y = 1
 
         self.offscreen = Image.new("RGBA", (self.high_res_width, self.high_res_height), "black")
         self.draw = ImageDraw.Draw(self.offscreen)
@@ -29,8 +29,8 @@ class GameRenderer:
     def set_envinfo(self, envinfo):
         self.envinfo = envinfo
 
-        self.pos_mult_x = self.high_res_width / envinfo["map_size"][0]
-        self.pos_mult_y = self.high_res_height / envinfo["map_size"][1]
+        self.mult_x = self.width * self.supersample_factor / envinfo["map_size_x"]
+        self.mult_y = self.height * self.supersample_factor / envinfo["map_size_y"]
 
     def set_parent(self, parent):
         self.parent_bg_col = parent.cget("fg_color")
@@ -48,24 +48,32 @@ class GameRenderer:
     def clear(self):
         if self.base_bg is not None:
             self.offscreen.paste(self.base_bg, (0, 0))
-        self.offscreen_render()
 
-    def render(self, state: dict):
+
+    def compute_render(self, state: dict):
         self.clear()
-        head_x, head_y = state["head_position"]
-        radius = 5 * self.supersample_factor
 
+        head_x, head_y = state["head_position"]
+        radius = 5
         self.draw.ellipse(
             (
-                (head_x * self.supersample_factor - radius) * self.pos_mult_x / self.supersample_factor,
-                (head_y * self.supersample_factor - radius) * self.pos_mult_y / self.supersample_factor,
-                (head_x * self.supersample_factor + radius) * self.pos_mult_x / self.supersample_factor,
-                (head_y * self.supersample_factor + radius) * self.pos_mult_y / self.supersample_factor,
+                (head_x - radius) * self.mult_x,
+                (head_y - radius) * self.mult_y,
+                (head_x + radius) * self.mult_x,
+                (head_y + radius) * self.mult_y,
             ),
             fill="white"
         )
 
-        self.offscreen_render()
+        final_img = self.back_original_size() if self.supersample_factor > 1 else self.offscreen
+        return final_img
+
+    def update_canvas(self, final_img):
+
+        self.frame_buffer = ImageTk.PhotoImage(final_img)
+
+        if self.canvas_id is not None:
+            self.canvas.itemconfig(self.canvas_id, image=self.frame_buffer)
 
     def back_original_size(self):
         return self.offscreen.resize((self.width, self.height), resample=Image.LANCZOS)

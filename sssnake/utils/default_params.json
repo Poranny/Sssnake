@@ -1,4 +1,5 @@
 {
-  "Map size X": 100,
-  "Map size Y": 100
+  "map_size_x": 100,
+  "map_size_y": 100,
+  "snake_speed": 1
 }

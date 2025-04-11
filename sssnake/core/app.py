@@ -24,21 +24,18 @@ class App:
         set_appearance_mode('dark')
         set_default_color_theme(get_theme_path('Cobalt'))
 
-
-        self.renderer = Renderer(width=600, height=600)
-
         params_path="sssnake/utils/default_params.json"
         with open(params_path, "r") as f :
             self.user_params = json.load(f)
 
-
         self.env = EnvEngine()
         self.env.reset_env(self.user_params)
 
+        self.renderer = Renderer(width=600, height=600)
+        self.renderer.set_envinfo(self.user_params)
+
         self.main_menu = MainView(self.app, self.renderer, self.user_params)
         self.main_menu.add_observer(self.on_mainview)
-
-        self.renderer.set_envinfo(self.user_params)
 
         self.controls = GameControls(self.app)
 

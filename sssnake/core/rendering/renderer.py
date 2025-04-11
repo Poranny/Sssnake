@@ -53,16 +53,30 @@ class Renderer:
 
         head_x, head_y = state["head_position"]
 
-        radius = 5
+        radius_head = 2
+        radius_seg = 1
+
         self.draw.ellipse(
             (
-                (head_x - radius) * self.mult_x,
-                (head_y - radius) * self.mult_y,
-                (head_x + radius) * self.mult_x,
-                (head_y + radius) * self.mult_y,
+                (head_x - radius_head) * self.mult_x,
+                (head_y - radius_head) * self.mult_y,
+                (head_x + radius_head) * self.mult_x,
+                (head_y + radius_head) * self.mult_y,
             ),
             fill="white"
         )
+
+        for segment_pos in state["segments_positions"]:
+            seg_x, seg_y = segment_pos
+            self.draw.ellipse(
+                (
+                    (seg_x - radius_seg) * self.mult_x,
+                    (seg_y - radius_seg) * self.mult_y,
+                    (seg_x + radius_seg) * self.mult_x,
+                    (seg_y + radius_seg) * self.mult_y,
+                ),
+                fill="white"
+            )
 
         final_img = self.back_original_size() if self.supersample_factor > 1 else self.offscreen
         return final_img

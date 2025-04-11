@@ -1,10 +1,12 @@
 from customtkinter import *
-import json
 
 class MainView(CTkFrame) :
     def __init__(self, master, game_renderer, user_params) :
         super().__init__(master)
 
+        self.settings_window = None
+        self.settings_current_row = None
+        self.settings_form_entries = None
         self.is_playing = False
 
         self.observers = list()
@@ -31,6 +33,7 @@ class MainView(CTkFrame) :
 
         self.game_renderer = game_renderer
         self.game_renderer.set_parent(self.game_frame)
+        self.selected_bitmap_path = ""
 
     def play(self):
         if self.is_playing :
@@ -65,6 +68,20 @@ class MainView(CTkFrame) :
             label = CTkLabel(self.settings_window, text=label_text)
             label.grid(row=self.settings_current_row, column=0, padx=10, pady=5, sticky="e")
 
+            if label_text == "map_bitmap_path":
+                def choose_file():
+                    file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png *.bmp *.jpg")])
+                    if file_path:
+                        button.configure(text="File: "  + file_path)
+                        self.selected_bitmap_path = file_path
+
+                button = CTkButton(self.settings_window, text="Select file", command=choose_file)
+                button.grid(row=self.settings_current_row, column=1, padx=10, pady=5)
+
+
+                self.settings_current_row += 2
+                return
+
             entry = CTkEntry(self.settings_window)
             entry.grid(row=self.settings_current_row, column=1, padx=10, pady=5)
 
@@ -88,7 +105,9 @@ class MainView(CTkFrame) :
 
             new_user_params[label_text] = float(value_str)
 
+
         self.user_params = new_user_params
+        self.user_params["map_bitmap_path"] = self.selected_bitmap_path
         self.notify_observers(self.user_params)
         self.settings_window.destroy()
 

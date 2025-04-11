@@ -2,6 +2,9 @@ import math
 from math import sin, cos, radians
 import random
 
+from PIL import Image
+
+
 class EnvEngine:
 
     def __init__(self):
@@ -13,6 +16,7 @@ class EnvEngine:
         self.segment_length = 1.5
         self.candy_distance = 2
         self.tail_hit_distance = 1
+        self.wall_hit_distance = 1
 
         self.hit_done = False
 
@@ -20,12 +24,14 @@ class EnvEngine:
 
         self.env_data = env_params
 
+        self.calculate_obstacles_map()
+
         self.state = {
-            "head_position": (50, 50),
+            "head_position": (15, 15),
             "head_direction": 0,
             "segments_num" : 0,
             "segments_positions": [],
-            "candy_position" : (25, 25)
+            "candy_position" : (10, 10)
         }
 
         self.hit_done = False
@@ -74,6 +80,36 @@ class EnvEngine:
         self.notify_observers(self.state)
 
     def hit_anything(self, state):
+
+        hit = False
+
+        hit = hit or self.hit_tail(state)
+
+        if not hit :
+            hit = hit or self.hit_wall(state)
+
+        return hit
+
+
+
+    def hit_wall (self, state):
+
+        hpx, hpy = state["head_position"]
+
+        hit = any(
+            abs(coord - border) < self.wall_hit_distance
+            for coord, border in [
+                (hpx, 0),
+                (hpy, 0),
+                (hpx, self.env_data["map_size_x"]),
+                (hpy, self.env_data["map_size_y"]),
+            ]
+        )
+
+        return hit
+
+    def hit_tail(self, state):
+
         hpx, hpy = state["head_position"]
 
         hit = False
@@ -89,7 +125,13 @@ class EnvEngine:
         return hit
 
     def random_candy_pos(self):
-        rand_x, rand_y = random.uniform(0, self.env_data["map_size_x"]), random.uniform(0, self.env_data["map_size_y"])
+        min_dist = self.wall_hit_distance * 2
+        max_x = self.env_data["map_size_x"] - min_dist
+        max_y = self.env_data["map_size_y"] - min_dist
+
+        rand_x = random.uniform(min_dist, max_x)
+        rand_y = random.uniform(min_dist, max_y)
+
         return (rand_x, rand_y)
 
 
@@ -159,6 +201,17 @@ class EnvEngine:
         state["segments_num"] += 1
 
         state["segments_positions"].append((last_pos_x + last_dir_x * self.segment_length, last_pos_y + last_dir_y * self.segment_length))
+
+    def calculate_obstacles_map(self):
+        path = self.env_data["map_bitmap_path"]
+        if path == "" :
+            return
+
+        img = Image.open(path).convert("L")
+        pixels = img.getdata()
+        binary = [1 if p > 128 else 0 for p in pixels]
+        self.obstacles_map = [binary[i * img.width:(i + 1) * img.width] for i in range(img.height)]
+
 
     def add_observer(self, observer):
         self.observers.append(observer)

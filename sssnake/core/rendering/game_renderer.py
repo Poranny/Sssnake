@@ -1,4 +1,3 @@
-import os
 import tkinter as tk
 from PIL import Image, ImageDraw, ImageTk
 
@@ -49,11 +48,11 @@ class GameRenderer:
         if self.base_bg is not None:
             self.offscreen.paste(self.base_bg, (0, 0))
 
-
     def compute_render(self, state: dict):
         self.clear()
 
         head_x, head_y = state["head_position"]
+
         radius = 5
         self.draw.ellipse(
             (
@@ -76,7 +75,7 @@ class GameRenderer:
             self.canvas.itemconfig(self.canvas_id, image=self.frame_buffer)
 
     def back_original_size(self):
-        return self.offscreen.resize((self.width, self.height), resample=Image.LANCZOS)
+        return self.offscreen.resize((self.width, self.height))
 
     def offscreen_render(self):
         final_img = self.back_original_size() if self.supersample_factor > 1 else self.offscreen

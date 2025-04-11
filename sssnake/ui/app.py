@@ -60,8 +60,11 @@ class App:
     def on_mainview(self, data):
 
         if isinstance(data, str) :
-            if data == "Play" :
-                self.play()
+            if data == "Play/finish" :
+                if self.play_on :
+                    self.pause_game()
+                else :
+                    self.play_game()
             elif data == "Quit" :
                 self.lifecycle_manager.quit()
             else :
@@ -75,18 +78,31 @@ class App:
         else :
             print("Mainview command unknown")
 
-    def play (self) :
-
-        if self.loop_id is not None:
-            self.app.after_cancel(self.loop_id)
-            self.loop_id = None
+    def play_game (self) :
+        self.end_current_game()
 
         self.env.reset_env(self.user_params)
+
+        self.main_menu.game_started()
         self.play_on = True
         self.game_loop()
+
+    def pause_game (self) :
+        self.end_current_game()
+
+        self.env.reset_env(self.user_params)
+
+        self.main_menu.game_ended()
+        self.play_on = False
 
     def game_loop(self):
         self.env.step(self.controls.get_action())
 
         if self.play_on :
             self.loop_id = self.app.after(17, self.game_loop)
+
+    def end_current_game(self):
+
+        if self.loop_id is not None:
+            self.app.after_cancel(self.loop_id)
+            self.loop_id = None

@@ -5,6 +5,8 @@ class MainView(CTkFrame) :
     def __init__(self, master, game_renderer, user_params) :
         super().__init__(master)
 
+        self.is_playing = False
+
         self.observers = list()
 
         self.user_params = user_params
@@ -31,10 +33,20 @@ class MainView(CTkFrame) :
         self.game_renderer.set_parent(self.game_frame)
 
     def play(self):
-        self.notify_observers('Play')
+        self.notify_observers('Play/finish')
 
     def quit(self):
         self.notify_observers('Quit')
+
+    def game_started (self) :
+        self.is_playing = True
+        self.btn_play.configure(text="Finish")
+        self.btn_settings.configure(state=DISABLED)
+
+    def game_ended (self) :
+        self.is_playing = False
+        self.btn_play.configure(text="Play")
+        self.btn_settings.configure(state=NORMAL)
 
     def open_settings(self) :
         self.settings_window = CTkToplevel(self)

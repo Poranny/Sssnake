@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageTk
 from sssnake.core.rendering.canvas_corners_masking import add_corners
 
 class GameRenderer:
-    def __init__(self, width, height, supersample_factor=2):
+    def __init__(self, width, height, supersample_factor=3):
         self.supersample_factor = supersample_factor
         self.width = width
         self.height = height

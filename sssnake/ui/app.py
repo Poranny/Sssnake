@@ -3,6 +3,7 @@ import threading
 
 from customtkinter import *
 
+from sssnake.core.controls.game_controls import GameControls
 from sssnake.core.env_engine.env_engine import EnvEngine
 from sssnake.core.rendering.game_renderer import GameRenderer
 from sssnake.utils.config import GAMECONFIG
@@ -13,7 +14,10 @@ from sssnake.core.lifecycle_manager import AppLifecycleManager
 class App:
     def __init__(self):
 
+        self.current_action = None
         self.lifecycle_manager = AppLifecycleManager()
+        self.play_on = False
+        self.loop_id = None
 
         self.app = CTk()
         self.app.title(GAMECONFIG.title)
@@ -34,12 +38,13 @@ class App:
 
         self.env.reset_env(self.user_params)
 
-        self.main_menu = MainView(self.app, self.game_renderer, self.lifecycle_manager, self.user_params)
-        self.main_menu.add_observer(self.on_mainview_data)
+        self.main_menu = MainView(self.app, self.game_renderer, self.user_params)
+        self.main_menu.add_observer(self.on_mainview)
 
         self.game_renderer.set_envinfo(self.user_params)
 
-        self.circle()
+        self.controls = GameControls(self.app)
+
 
     def run(self):
         self.app.mainloop()
@@ -52,12 +57,36 @@ class App:
 
         self.app.after(0, lambda: self.game_renderer.update_canvas(final_img))
 
-    def on_mainview_data(self, data):
-        self.game_renderer.set_envinfo(self.user_params)
+    def on_mainview(self, data):
+
+        if isinstance(data, str) :
+            if data == "Play" :
+                self.play()
+            elif data == "Quit" :
+                self.lifecycle_manager.quit()
+            else :
+                print("Mainview command unknown")
+
+        elif isinstance(data, dict) :
+            self.user_params = data
+            self.env.reset_env(self.user_params)
+            self.game_renderer.set_envinfo(self.user_params)
+
+        else :
+            print("Mainview command unknown")
+
+    def play (self) :
+
+        if self.loop_id is not None:
+            self.app.after_cancel(self.loop_id)
+            self.loop_id = None
+
         self.env.reset_env(self.user_params)
+        self.play_on = True
+        self.game_loop()
 
-    def circle(self):
+    def game_loop(self):
+        self.env.step(self.controls.get_action())
 
-        self.env.step()
-
-        self.app.after(10, self.circle)
+        if self.play_on :
+            self.loop_id = self.app.after(17, self.game_loop)

@@ -18,11 +18,25 @@ class EnvEngine:
         }
 
     def step (self, action=None):
+        speed = self.env_data["snake_speed"]
+        turnspeed = self.env_data["snake_turnspeed"]
+
         head_pos_x, head_pos_y = self.state["head_position"]
+
+
+
+        if action == "left" :
+            self.state["head_direction"] += turnspeed
+        elif action == "right" :
+            self.state["head_direction"] -= turnspeed
+
+
         head_dir_rad = radians(self.state["head_direction"])
+
+
         head_dir_x, head_dir_y = sin(head_dir_rad), cos(head_dir_rad)
 
-        speed = self.env_data["snake_speed"]
+
 
         self.state["head_position"] = (head_pos_x + head_dir_x * speed, head_pos_y + head_dir_y * speed)
 

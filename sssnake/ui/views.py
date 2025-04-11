@@ -2,12 +2,11 @@ from customtkinter import *
 import json
 
 class MainView(CTkFrame) :
-    def __init__(self, master, game_renderer, lifecycle_manager, user_params) :
+    def __init__(self, master, game_renderer, user_params) :
         super().__init__(master)
 
         self.observers = list()
 
-        self.lifecycle_manager = lifecycle_manager
         self.user_params = user_params
 
         self.grid_columnconfigure(0, weight=3)
@@ -20,9 +19,9 @@ class MainView(CTkFrame) :
         self.menu_frame = CTkFrame(master)
         self.menu_frame.grid(row=0, column=1, padx=20, pady=20)
 
-        self.btn_play = CTkButton(master=self.menu_frame, text='Play!')
+        self.btn_play = CTkButton(master=self.menu_frame, text='Play!', command=self.play)
         self.btn_settings = CTkButton(master=self.menu_frame, text='Settings', command=self.open_settings)
-        self.btn_exit = CTkButton(master=self.menu_frame, text='Quit', command=self.lifecycle_manager.quit)
+        self.btn_exit = CTkButton(master=self.menu_frame, text='Quit', command=self.quit)
 
         self.btn_play.grid(row=0, column=0, padx=20, pady=20)
         self.btn_settings.grid(row=1, column=0, padx=20, pady=20)
@@ -30,6 +29,12 @@ class MainView(CTkFrame) :
 
         self.game_renderer = game_renderer
         self.game_renderer.set_parent(self.game_frame)
+
+    def play(self):
+        self.notify_observers('Play')
+
+    def quit(self):
+        self.notify_observers('Quit')
 
     def open_settings(self) :
         self.settings_window = CTkToplevel(self)
@@ -66,7 +71,7 @@ class MainView(CTkFrame) :
         for (label_text, entry_widget) in self.settings_form_entries :
             value_str = entry_widget.get()
 
-            new_user_params[label_text] = int(value_str)
+            new_user_params[label_text] = float(value_str)
 
         self.user_params = new_user_params
         self.notify_observers(self.user_params)

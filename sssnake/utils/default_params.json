@@ -1,5 +1,6 @@
 {
   "map_size_x": 100,
   "map_size_y": 100,
-  "snake_speed": 1
+  "snake_speed": 0.25,
+  "snake_turnspeed" : 4
 }

@@ -4,10 +4,11 @@ import random
 
 from PIL import Image
 
-
 class EnvEngine:
 
     def __init__(self):
+        self.free_cells_candy = None
+        self.safe_map_snake = None
         self.env_data = None
         self.state = dict()
         self.observers = list()
@@ -83,7 +84,6 @@ class EnvEngine:
         self.notify_observers(self.state)
 
     def hit_anything(self, state):
-
         hit = False
 
         hit = hit or self.hit_tail(state)
@@ -97,14 +97,11 @@ class EnvEngine:
         return hit
 
     def hit_obstacle(self, state):
-        obstacles_map = state.get("obstacles_map")
-        safe_map_snake = state.get("safe_map_snake")
-        if not obstacles_map or not safe_map_snake:
+        if not self.safe_map_snake:
             return False
 
         hx, hy = state["head_position"]
-        w = len(obstacles_map[0])
-        h = len(obstacles_map)
+        w, h = len(self.safe_map_snake[0]), len(self.safe_map_snake)
 
         px = int(hx / self.env_data["map_size_x"] * w)
         py = int(hy / self.env_data["map_size_y"] * h)
@@ -112,10 +109,9 @@ class EnvEngine:
         px = max(0, min(w - 1, px))
         py = max(0, min(h - 1, py))
 
-        return safe_map_snake[py][px] == 0
+        return self.safe_map_snake[py][px] == 0
 
     def hit_wall (self, state):
-
         hpx, hpy = state["head_position"]
 
         hit = any(
@@ -146,37 +142,7 @@ class EnvEngine:
 
         return hit
 
-    def random_candy_pos(self):
-
-        if self._free_cells_candy:
-            x_pixel, y_pixel = random.choice(self._free_cells_candy)
-            w = len(self.state["obstacles_map"][0])
-            h = len(self.state["obstacles_map"])
-            env_x = x_pixel * (self.env_data["map_size_x"] / w)
-            env_y = y_pixel * (self.env_data["map_size_y"] / h)
-            return (env_x, env_y)
-        else:
-            return self.random_candy_pos_legacy()
-
-    def random_candy_pos_legacy(self):
-
-        min_dist = self.candy_wall_distance
-        max_x = self.env_data["map_size_x"] - min_dist
-        max_y = self.env_data["map_size_y"] - min_dist
-
-        rand_x = random.uniform(min_dist, max_x)
-        rand_y = random.uniform(min_dist, max_y)
-        return (rand_x, rand_y)
-
-    def met_candy(self, state):
-        hpx, hpy = state["head_position"]
-        cpx, cpy = state["candy_position"]
-        distance = math.sqrt((hpx - cpx) ** 2 + (hpy - cpy) ** 2)
-
-        return distance < self.candy_distance
-
     def get_position_on_path(self, distance_behind_head):
-
         if len(self.head_path) < 2:
             return self.head_path[0] if self.head_path else (0, 0)
 
@@ -207,109 +173,121 @@ class EnvEngine:
             last_dir_x, last_dir_y = -sin(last_dir_rad), -cos(last_dir_rad)
 
         else :
+            def normalized_direction(from_pos, to_pos):
+                dx, dy = from_pos[0] - to_pos[0], from_pos[1] - to_pos[1]
+                length = (dx ** 2 + dy ** 2) ** 0.5
+                if length > 0:
+                    return dx / length, dy / length
+                else:
+                    return 1, 0
+
             last_pos_x, last_pos_y = state["segments_positions"][-1]
 
             if state["segments_num"] == 1 :
-                head_pos_x, head_pos_y = state["head_position"]
-
-                dx, dy = last_pos_x - head_pos_x, last_pos_y - head_pos_y
-                length = (dx ** 2 + dy ** 2) ** 0.5
-
-                if length > 0 :
-                    last_dir_x, last_dir_y = (dx / length, dy / length)
-                else :
-                    last_dir_x, last_dir_y = 1, 0
+                last_dir_x, last_dir_y = normalized_direction(state["head_position"], state["segments_positions"][-1])
 
             else :
-                last2_pos_x, last2_pos_y = state["segments_positions"][-2]
-
-                dx, dy = last_pos_x - last2_pos_x, last_pos_y - last2_pos_y
-                length = (dx ** 2 + dy ** 2) ** 0.5
-                if length > 0:
-                    last_dir_x, last_dir_y = (dx / length, dy / length)
-                else:
-                    last_dir_x, last_dir_y = 1, 0
-
+                last_dir_x, last_dir_y = normalized_direction(state["segments_positions"][-1], state["segments_positions"][-2])
 
         state["segments_num"] += 1
-
         state["segments_positions"].append((last_pos_x + last_dir_x * self.segment_length, last_pos_y + last_dir_y * self.segment_length))
 
-    def calculate_obstacles_map(self):
+    def random_candy_pos(self):
+        if self._free_cells_candy:
+            x_pixel, y_pixel = random.choice(self.free_cells_candy)
+            w, h = len(self.state["obstacles_map"][0]), len(self.state["obstacles_map"])
 
+            env_x = x_pixel * (self.env_data["map_size_x"] / w)
+            env_y = y_pixel * (self.env_data["map_size_y"] / h)
+
+            return env_x, env_y
+        else:
+            return self.random_candy_pos_legacy()
+
+    def random_candy_pos_legacy(self):
+        min_dist = self.candy_wall_distance
+        max_x = self.env_data["map_size_x"] - min_dist
+        max_y = self.env_data["map_size_y"] - min_dist
+
+        rand_x = random.uniform(min_dist, max_x)
+        rand_y = random.uniform(min_dist, max_y)
+        return (rand_x, rand_y)
+
+    def met_candy(self, state):
+        hpx, hpy = state["head_position"]
+        cpx, cpy = state["candy_position"]
+        distance = math.sqrt((hpx - cpx) ** 2 + (hpy - cpy) ** 2)
+
+        return distance < self.candy_distance
+
+    def load_obstacles_map(self) :
         path = self.env_data["map_bitmap_path"]
         if not path:
-            self.state["obstacles_map"] = None
-            self.state["safe_map_snake"] = None
-            self.state["safe_map_candy"] = None
+            self.state["obstacles_map"], self.state["safe_map_snake"], self.state["safe_map_candy"] = None, None, None
             self._free_cells_candy = []
-            return
+            return False
 
         img = Image.open(path).convert("L")
-        w, h = img.size
+        map_w, map_h = img.size
         pixels = list(img.getdata())
 
         obstacles_map = [
-            [1 if p > 128 else 0 for p in pixels[row_start: row_start + w]]
-            for row_start in range(0, w * h, w)
+            [1 if p > 128 else 0 for p in pixels[row_start: row_start + map_w]]
+            for row_start in range(0, map_w * map_h, map_w)
         ]
         self.state["obstacles_map"] = obstacles_map
+        return True
 
-        px_margin_snake = int(self.obstacle_hit_distance * (w / self.env_data["map_size_x"]))
-        px_margin_snake = max(px_margin_snake, 1)
+    def calculate_obstacles_map(self):
 
-        safe_map_snake = [[1] * w for _ in range(h)]
+        if not self.load_obstacles_map() :
+            return
 
-        for y in range(h):
-            for x in range(w):
-                if obstacles_map[y][x] == 1:
-                    x0 = max(0, x - px_margin_snake)
-                    x1 = min(w, x + px_margin_snake + 1)
-                    y0 = max(0, y - px_margin_snake)
-                    y1 = min(h, y + px_margin_snake + 1)
-                    for yy in range(y0, y1):
-                        for xx in range(x0, x1):
-                            safe_map_snake[yy][xx] = 0
+        map_w, map_h = len(self.state["obstacles_map"][0]), len(self.state["obstacles_map"])
 
-        px_margin_candy = int(self.candy_obstacle_distance * (w / self.env_data["map_size_x"]))
-        px_margin_candy = max(px_margin_candy, 1)
+        def generate_safe_map(margin_units):
+            margin_x = max(int(margin_units * (map_w / self.env_data["map_size_x"])), 1)
+            margin_y = max(int(margin_units * (map_h / self.env_data["map_size_y"])), 1)
 
-        safe_map_candy = [[1] * w for _ in range(h)]
+            safe_map = [[1] * map_w for _ in range(map_h)]
 
-        for y in range(h):
-            for x in range(w):
-                if obstacles_map[y][x] == 1:
-                    x0 = max(0, x - px_margin_candy)
-                    x1 = min(w, x + px_margin_candy + 1)
-                    y0 = max(0, y - px_margin_candy)
-                    y1 = min(h, y + px_margin_candy + 1)
-                    for yy in range(y0, y1):
-                        for xx in range(x0, x1):
-                            safe_map_candy[yy][xx] = 0
+            for y in range(map_h):
+                for x in range(map_w):
+                    if self.state["obstacles_map"][y][x] == 1:
+                        x0 = max(0, x - margin_x)
+                        x1 = min(map_w, x + margin_x + 1)
+                        y0 = max(0, y - margin_y)
+                        y1 = min(map_h, y + margin_y + 1)
 
-        px_margin_wall = int(self.candy_wall_distance * (w / self.env_data["map_size_x"]))
-        px_margin_wall = max(px_margin_wall, 1)
+                        for yy in range(y0, y1):
+                            for xx in range(x0, x1):
+                                safe_map[yy][xx] = 0
+            return safe_map
 
-        for y in range(px_margin_wall):
-            for x in range(w):
+        self.safe_map_snake = generate_safe_map(self.obstacle_hit_distance)
+
+        margin_wall_x = max(int(self.candy_wall_distance * (map_w / self.env_data["map_size_x"])), 1)
+        margin_wall_y = max(int(self.candy_wall_distance * (map_h / self.env_data["map_size_y"])), 1)
+
+        safe_map_candy = generate_safe_map(self.candy_obstacle_distance)
+
+        for y in range(margin_wall_y):
+            for x in range(map_w):
                 safe_map_candy[y][x] = 0
-                safe_map_candy[h - 1 - y][x] = 0
+                safe_map_candy[map_h - 1 - y][x] = 0
 
-        for x in range(px_margin_wall):
-            for y in range(h):
+        for x in range(margin_wall_x):
+            for y in range(map_h):
                 safe_map_candy[y][x] = 0
-                safe_map_candy[y][w - 1 - x] = 0
-
-        self.state["safe_map_snake"] = safe_map_snake
-        self.state["safe_map_candy"] = safe_map_candy
+                safe_map_candy[y][map_w - 1 - x] = 0
 
         free_cells_candy = []
-        for y in range(h):
-            for x in range(w):
+        for y in range(map_h):
+            for x in range(map_w):
                 if safe_map_candy[y][x] == 1:
                     free_cells_candy.append((x, y))
 
-        self._free_cells_candy = free_cells_candy
+        self.free_cells_candy = free_cells_candy
 
     def add_observer(self, observer):
         self.observers.append(observer)

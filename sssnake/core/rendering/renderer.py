@@ -1,5 +1,6 @@
 import tkinter as tk
 from PIL import Image, ImageDraw, ImageTk
+import numpy as np
 
 from sssnake.core.rendering.canvas_corners_masking import add_corners
 
@@ -16,7 +17,9 @@ class Renderer:
         self.canvas = None
         self.frame_buffer  = None
         self.parent_bg_col = None
+
         self.base_bg = None
+        self.obstacles_texture = None
 
         self.envinfo = {}
         self.mult_x = 1
@@ -26,10 +29,12 @@ class Renderer:
         self.draw = ImageDraw.Draw(self.offscreen)
 
     def set_envinfo(self, envinfo):
-        self.envinfo = envinfo
 
-        self.mult_x = self.width * self.supersample_factor / envinfo["map_size_x"]
-        self.mult_y = self.height * self.supersample_factor / envinfo["map_size_y"]
+        self.envinfo = envinfo
+        self.obstacles_texture = None  # Wymusi ponowną generację w compute_render
+
+        self.mult_x = (self.width * self.supersample_factor) / envinfo["map_size_x"]
+        self.mult_y = (self.height * self.supersample_factor) / envinfo["map_size_y"]
 
     def set_parent(self, parent):
         self.parent_bg_col = parent.cget("fg_color")
@@ -37,25 +42,44 @@ class Renderer:
         self.canvas.pack(expand=True, fill=tk.BOTH, padx=6, pady=6)
 
         base = Image.new("RGBA", (self.high_res_width, self.high_res_height), "black")
+        self.base_bg = add_corners(base, rad=5 * self.supersample_factor, fill_color=self.parent_bg_col[1])
 
-        self.base_bg = add_corners(base, rad= 5 * self.supersample_factor, fill_color=self.parent_bg_col[1])
         self.offscreen.paste(self.base_bg, (0, 0))
-        self.frame_buffer = ImageTk.PhotoImage(self.back_original_size())
 
+        self.frame_buffer = ImageTk.PhotoImage(self.back_original_size())
         self.canvas_id = self.canvas.create_image(0, 0, anchor="nw", image=self.frame_buffer)
 
     def clear(self):
+
         if self.base_bg is not None:
             self.offscreen.paste(self.base_bg, (0, 0))
+        else:
+            self.offscreen.paste("black", (0, 0, self.high_res_width, self.high_res_height))
 
     def compute_render(self, state: dict):
         self.clear()
 
+        obstacles_map = state.get("obstacles_map")
+        if obstacles_map:
+            if self.obstacles_texture is None:
+                arr = np.array(obstacles_map, dtype=np.uint8) * 255
+                w, h = self.offscreen.size
+                bg_img = Image.fromarray(arr, mode="L").resize((w, h), Image.NEAREST)
+                bg_img = bg_img.convert("RGB")
+
+                self.obstacles_texture = add_corners(
+                    bg_img,
+                    rad=5 * self.supersample_factor,
+                    fill_color=self.parent_bg_col[1]
+                )
+
+            self.offscreen.paste(self.obstacles_texture, (0, 0))
+
         head_x, head_y = state["head_position"]
         candy_x, candy_y = state["candy_position"]
-        radius_head = 2
+        radius_head = 1.25
         radius_seg = 1
-        radius_candy = 1.5
+        radius_candy = 1
 
         self.draw.ellipse(
             (
@@ -94,7 +118,6 @@ class Renderer:
 
     def update_canvas(self, final_img):
         self.frame_buffer = ImageTk.PhotoImage(final_img)
-
         if self.canvas_id is not None:
             self.canvas.itemconfig(self.canvas_id, image=self.frame_buffer)
 
@@ -103,13 +126,10 @@ class Renderer:
 
     def offscreen_render(self):
         final_img = self.back_original_size() if self.supersample_factor > 1 else self.offscreen
-
         self.frame_buffer = ImageTk.PhotoImage(final_img)
         if self.canvas_id is not None:
             self.canvas.itemconfig(self.canvas_id, image=self.frame_buffer)
 
     def async_render(self, state: dict):
-
         final_img = self.compute_render(state)
-
         self.canvas.after(0, lambda: self.update_canvas(final_img))

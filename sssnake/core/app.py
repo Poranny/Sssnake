@@ -3,7 +3,7 @@ import json
 from customtkinter import *
 
 from sssnake.core.game.game_controls import GameControls
-from sssnake.core.env_engine.env_engine import EnvEngine
+from sssnake.core.env.env_engine import EnvEngine
 from sssnake.core.game.game_loop import GameLoop
 from sssnake.core.rendering.renderer import Renderer
 from sssnake.utils.config import GAMECONFIG

@@ -59,7 +59,7 @@ class Renderer:
     def compute_render(self, state: dict):
         self.clear()
 
-        obstacles_map = state.get("obstacles_map")
+        obstacles_map = self.envinfo.get("obstacles_map")
         if obstacles_map:
             if self.obstacles_texture is None:
                 arr = np.array(obstacles_map, dtype=np.uint8) * 255

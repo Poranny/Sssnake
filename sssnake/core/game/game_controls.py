@@ -1,27 +1,28 @@
-class GameControls :
+class GameControls:
+    left_keys = {"Left", "a"}
+    right_keys = {"Right", "d"}
+    all_keys = left_keys | right_keys
+
     def __init__(self, widget):
         self.widget = widget
-
         self.pressed_keys = set()
 
-        self.widget.bind("<KeyPress>", self.on_key_press)
-        self.widget.bind("<KeyRelease>", self.on_key_release)
+        widget.bind("<KeyPress>", self.on_key_press)
+        widget.bind("<KeyRelease>", self.on_key_release)
 
     def on_key_press(self, event):
-        if event.keysym in ("Left", "Right"):
+        if event.keysym in self.all_keys:
             self.pressed_keys.add(event.keysym)
 
     def on_key_release(self, event):
-        if event.keysym in ("Left", "Right"):
-            self.pressed_keys.discard(event.keysym)
+        self.pressed_keys.discard(event.keysym)
 
     def get_action(self):
-
-        if "Left" in self.pressed_keys and "Right" in self.pressed_keys:
-            return None
-        elif "Left" in self.pressed_keys:
+        pressed = self.pressed_keys
+        if pressed & self.left_keys and pressed & self.right_keys:
+            return "none"
+        if pressed & self.left_keys:
             return "left"
-        elif "Right" in self.pressed_keys:
+        if pressed & self.right_keys:
             return "right"
-        else:
-            return None
+        return None

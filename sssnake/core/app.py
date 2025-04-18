@@ -32,7 +32,7 @@ class App:
         self.env.reset_env(self.user_params)
 
         self.renderer = Renderer(width=600, height=600)
-        self.renderer.set_envinfo(self.user_params)
+        self.renderer.set_renderinfo(self.user_params)
 
         self.main_menu = MainView(self.app, self.renderer, self.user_params)
         self.main_menu.add_observer(self.on_mainview)
@@ -65,7 +65,7 @@ class App:
             self.game_loop.set_params(data)
 
             self.env.reset_env(self.user_params)
-            self.renderer.set_envinfo(self.user_params)
+            self.renderer.set_renderinfo(self.user_params)
 
         else :
             print("Mainview command unknown")

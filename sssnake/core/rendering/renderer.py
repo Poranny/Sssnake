@@ -2,6 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageDraw, ImageTk
 import numpy as np
 
+from sssnake.core.env.env_helpers import load_obstacles_map
 from sssnake.core.rendering.canvas_corners_masking import add_corners
 
 class Renderer:
@@ -21,20 +22,38 @@ class Renderer:
         self.base_bg = None
         self.obstacles_texture = None
 
-        self.envinfo = {}
+        self.render_info = {}
+        self.obstacles_map = {}
         self.mult_x = 1
         self.mult_y = 1
 
         self.offscreen = Image.new("RGBA", (self.high_res_width, self.high_res_height), "black")
         self.draw = ImageDraw.Draw(self.offscreen)
 
-    def set_envinfo(self, envinfo):
+    def set_renderinfo(self, render_info):
+        self.render_info = render_info
+        self.obstacles_texture = None
 
-        self.envinfo = envinfo
-        self.obstacles_texture = None  # Wymusi ponowną generację w compute_render
+        obstacles_map_path = self.render_info.get("map_bitmap_path")
+        obstacles_map = load_obstacles_map(obstacles_map_path)
 
-        self.mult_x = (self.width * self.supersample_factor) / envinfo["map_size_x"]
-        self.mult_y = (self.height * self.supersample_factor) / envinfo["map_size_y"]
+        if obstacles_map:
+            if self.obstacles_texture is None:
+                arr = np.array(obstacles_map, dtype=np.uint8) * 255
+                w, h = self.offscreen.size
+                bg_img = Image.fromarray(arr, mode="L").resize((w, h), Image.NEAREST)
+                bg_img = bg_img.convert("RGB")
+
+                self.obstacles_texture = add_corners(
+                    bg_img,
+                    rad=5 * self.supersample_factor,
+                    fill_color=self.parent_bg_col[1]
+                )
+
+            self.offscreen.paste(self.obstacles_texture, (0, 0))
+
+        self.mult_x = (self.width * self.supersample_factor) / render_info["map_size_x"]
+        self.mult_y = (self.height * self.supersample_factor) / render_info["map_size_y"]
 
     def set_parent(self, parent):
         self.parent_bg_col = parent.cget("fg_color")
@@ -50,30 +69,19 @@ class Renderer:
         self.canvas_id = self.canvas.create_image(0, 0, anchor="nw", image=self.frame_buffer)
 
     def clear(self):
-
         if self.base_bg is not None:
             self.offscreen.paste(self.base_bg, (0, 0))
         else:
-            self.offscreen.paste("black", (0, 0, self.high_res_width, self.high_res_height))
+            self.offscreen.paste(
+                "black",
+                (0, 0, self.high_res_width, self.high_res_height)
+            )
+
+        if self.obstacles_texture is not None:
+            self.offscreen.paste(self.obstacles_texture, (0, 0), self.obstacles_texture)
 
     def compute_render(self, state: dict):
         self.clear()
-
-        obstacles_map = self.envinfo.get("obstacles_map")
-        if obstacles_map:
-            if self.obstacles_texture is None:
-                arr = np.array(obstacles_map, dtype=np.uint8) * 255
-                w, h = self.offscreen.size
-                bg_img = Image.fromarray(arr, mode="L").resize((w, h), Image.NEAREST)
-                bg_img = bg_img.convert("RGB")
-
-                self.obstacles_texture = add_corners(
-                    bg_img,
-                    rad=5 * self.supersample_factor,
-                    fill_color=self.parent_bg_col[1]
-                )
-
-            self.offscreen.paste(self.obstacles_texture, (0, 0))
 
         head_x, head_y = state["head_position"]
         candy_x, candy_y = state["candy_position"]

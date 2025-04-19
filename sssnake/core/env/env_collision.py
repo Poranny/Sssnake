@@ -1,12 +1,15 @@
 import math
 
+from sssnake.utils.env_config import EnvConfig
+
+
 class EnvCollision :
-    def __init__(self):
+    def __init__(self, env_config: EnvConfig):
         self.obstacles_map = []
 
-        self.tail_hit_distance = 1
-        self.wall_hit_distance = 1
-        self.obstacle_hit_distance = 1
+        self.tail_hit_distance = env_config.get("hit_tail_distance")
+        self.wall_hit_distance = env_config.get("hit_wall_distance")
+        self.obstacle_hit_distance = env_config.get("hit_obstacle_distance")
 
     def hit_anything(self, state):
         return (
@@ -52,7 +55,9 @@ class EnvCollision :
         for segment_pos in state["segments_positions"]:
             cpx, cpy = segment_pos
             distance = math.sqrt((hpx - cpx) ** 2 + (hpy - cpy) ** 2)
-
+            print(distance)
+            print(self.tail_hit_distance)
+            print()
             if distance < self.tail_hit_distance :
                 hit = True
                 break

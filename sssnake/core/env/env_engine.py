@@ -8,19 +8,18 @@ from sssnake.core.env.env_helpers import load_obstacles_map, generate_safe_map
 
 class EnvEngine:
 
-    def __init__(self):
+    def __init__(self, env_config: EnvConfig):
         self.config = None
         self.state = dict()
         self.observers = list()
 
         self.head_path = []
-        self.segment_length = 1.5
+        self.segment_length = env_config.get("tail_segment_length")
 
-        self.env_collision = EnvCollision()
-        self.env_candies = EnvCandies()
+        self.env_collision = EnvCollision(env_config)
+        self.env_candies = EnvCandies(env_config)
 
     def reset_env(self, config: EnvConfig = None) :
-
         if config is not None:
             self.config = config
 

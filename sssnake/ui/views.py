@@ -61,17 +61,16 @@ class MainView(CTkFrame):
         win.lift()
 
         frm_var = CTkFrame(win)
-        frm_const = CTkFrame(win)
         frm_var.grid(row=0, column=0, padx=10, pady=10, sticky="n")
-        frm_const.grid(row=0, column=1, padx=10, pady=10, sticky="n")
+        frm_const = CTkFrame(win)
+        #frm_const.grid(row=0, column=1, padx=10, pady=10, sticky="n")
 
-        # kolumny 1 i 2 (pola) nie rozciągają się
         for frm in (frm_var, frm_const):
             frm.grid_columnconfigure(1, weight=0)
             frm.grid_columnconfigure(2, weight=0)
 
         CTkLabel(frm_var, text="Variables").grid(row=0, column=0, columnspan=3, pady=(0, 10))
-        CTkLabel(frm_const, text="Constants").grid(row=0, column=0, columnspan=3, pady=(0, 10))
+        #CTkLabel(frm_const, text="Constants").grid(row=0, column=0, columnspan=3, pady=(0, 10))
 
         self._settings_widgets: Dict[str, Any] = {}
 
@@ -105,7 +104,6 @@ class MainView(CTkFrame):
 
                 self._settings_widgets[name] = tuple(entries)
 
-
             else:
                 ent = CTkEntry(frame, width=120)
                 ent.grid(row=idx, column=1, columnspan=2, padx=15, pady=4, sticky="w")
@@ -118,8 +116,9 @@ class MainView(CTkFrame):
                 add_row(frm_var, var_row, name, val)
                 var_row += 1
             else:
-                add_row(frm_const, const_row, name, val)
-                const_row += 1
+                pass
+                #add_row(frm_const, const_row, name, val)
+                #const_row += 1
 
         CTkButton(win, text="Save", command=lambda: self._save(win)).grid(
             row=1, column=0, columnspan=2, pady=10

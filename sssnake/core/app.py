@@ -35,8 +35,7 @@ class App:
         self.main_menu = MainView(self.app, self.renderer, self.env_config)
         self.main_menu.add_observer(self.on_mainview)
 
-        self.env = EnvEngine()
-        #self.env.reset_env(self.env_config)
+        self.env = EnvEngine(self.env_config)
 
         self.controls = GameControls(self.app)
 
@@ -65,7 +64,7 @@ class App:
             self.env_config = EnvConfig(data)
             self.game_loop.set_config(self.env_config)
             self.main_menu.set_config(self.env_config)
-            #self.env.reset_env(self.env_config)
+
             self.renderer.set_render_config(self.env_config)
 
         else :

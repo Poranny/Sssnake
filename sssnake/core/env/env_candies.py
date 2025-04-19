@@ -2,13 +2,15 @@ import math
 import random
 
 from sssnake.core.env.env_helpers import generate_safe_map
+from sssnake.utils.env_config import EnvConfig
+
 
 class EnvCandies :
-    def __init__(self):
-        self.candy_distance = 2
-        self.candy_wall_distance = 2
-        self.candy_obstacle_distance = 2
-        self.candy_head_distance = 10
+    def __init__(self, env_config: EnvConfig):
+        self.candy_distance = env_config.get("candy_collect_distance")
+        self.candy_wall_distance = env_config.get("candy_pos_wall_distance")
+        self.candy_obstacle_distance = env_config.get("candy_pos_obstacle_distance")
+        self.candy_head_distance = env_config.get("candy_head_distance")
 
         self.map_size = 0, 0
 

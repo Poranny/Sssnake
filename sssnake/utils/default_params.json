@@ -15,6 +15,7 @@
     "candy_collect_distance" : 2,
     "candy_pos_wall_distance" : 2,
     "candy_pos_obstacle_distance" : 2,
+    "candy_head_distance" : 10,
 
     "hit_tail_distance" : 1,
     "hit_wall_distance" : 1,

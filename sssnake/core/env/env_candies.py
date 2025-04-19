@@ -8,6 +8,7 @@ class EnvCandies :
         self.candy_distance = 2
         self.candy_wall_distance = 2
         self.candy_obstacle_distance = 2
+        self.candy_head_distance = 10
 
         self.map_size = 0, 0
 
@@ -16,13 +17,16 @@ class EnvCandies :
     def set_map_size(self, map_size):
         self.map_size = map_size
 
-    def random_candy_pos(self):
-        if self.free_pos_candy:
-            x_pos, y_pos = random.choice(self.free_pos_candy)
+    def random_candy_pos(self, state):
+        while True:
+            if self.free_pos_candy:
+                x_pos, y_pos = random.choice(self.free_pos_candy)
+            else:
+                x_pos, y_pos = self.random_candy_pos_nomap()
 
-            return x_pos, y_pos
-        else:
-            return self.random_candy_pos_nomap()
+            dist_to_head = math.sqrt((x_pos - state["head_position"][0]) ** 2 + (y_pos - state["head_position"][1]) ** 2)
+            if dist_to_head > self.candy_head_distance:
+                return x_pos, y_pos
 
     def random_candy_pos_nomap(self):
         min_dist = self.candy_wall_distance

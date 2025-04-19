@@ -40,7 +40,7 @@ class EnvEngine:
 
         self.head_path = [self.state["head_position"]]
 
-        self.state["candy_position"] = self.env_candies.random_candy_pos()
+        self.state["candy_position"] = self.env_candies.random_candy_pos(self.state)
 
 
     def step (self, action):
@@ -77,7 +77,7 @@ class EnvEngine:
 
         if self.env_candies.met_candy(new_state) :
             self.add_segment(new_state)
-            new_state["candy_position"] = self.env_candies.random_candy_pos()
+            new_state["candy_position"] = self.env_candies.random_candy_pos(self.state)
 
         self.state = new_state
         self.notify_observers(self.state)

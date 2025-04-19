@@ -1,17 +1,18 @@
 from customtkinter import *
+from tkinter import filedialog
+import tkinter as tk
+from typing import Dict, Any
 
-class MainView(CTkFrame) :
-    def __init__(self, master, game_renderer, user_params) :
+from sssnake.utils.env_config import EnvConfig
+
+
+class MainView(CTkFrame):
+
+    def __init__(self, master, renderer, env_config: EnvConfig):
         super().__init__(master)
-
-        self.settings_window = None
-        self.settings_current_row = None
-        self.settings_form_entries = None
-        self.is_playing = False
-
-        self.observers = list()
-
-        self.user_params = user_params
+        self.set_config(env_config)
+        self.renderer = renderer
+        self.observers = []
 
         self.grid_columnconfigure(0, weight=3)
         self.grid_columnconfigure(1, weight=1)
@@ -23,97 +24,145 @@ class MainView(CTkFrame) :
         self.menu_frame = CTkFrame(master)
         self.menu_frame.grid(row=0, column=1, padx=20, pady=20)
 
-        self.btn_play = CTkButton(master=self.menu_frame, text='Play!', command=self.play)
-        self.btn_settings = CTkButton(master=self.menu_frame, text='Settings', command=self.open_settings)
-        self.btn_exit = CTkButton(master=self.menu_frame, text='Quit', command=self.quit)
+        self.btn_play = CTkButton(self.menu_frame, text="Play!",  command=self._toggle_play)
+        self.btn_settings = CTkButton(self.menu_frame, text="Settings", command=self.open_settings)
+        self.btn_exit = CTkButton(self.menu_frame, text="Quit",  command=lambda: self.notify_observers("Quit"))
 
         self.btn_play.grid(row=0, column=0, padx=20, pady=20)
         self.btn_settings.grid(row=1, column=0, padx=20, pady=20)
         self.btn_exit.grid(row=2, column=0, padx=20, pady=20)
 
-        self.game_renderer = game_renderer
-        self.game_renderer.set_parent(self.game_frame)
+        self.renderer.set_parent(self.game_frame)
+
+        self.is_playing = False
         self.selected_bitmap_path = ""
 
-    def play(self):
-        if self.is_playing :
-            self.notify_observers('Finish')
-        else :
-            self.notify_observers('Play')
+    def set_config(self, cfg: EnvConfig):
+        self.env_config = cfg
 
-    def quit(self):
-        self.notify_observers('Quit')
+    def _toggle_play(self):
+        cmd = "Finish" if self.is_playing else "Play"
+        self.notify_observers(cmd)
 
-    def game_started (self) :
+    def game_started(self):
         self.is_playing = True
         self.btn_play.configure(text="Finish")
         self.btn_settings.configure(state=DISABLED)
 
-    def game_ended (self) :
+    def game_ended(self):
         self.is_playing = False
         self.btn_play.configure(text="Play!")
         self.btn_settings.configure(state=NORMAL)
 
-    def open_settings(self) :
-        self.settings_window = CTkToplevel(self)
-        self.settings_window.title("Settings")
-        self.settings_window.attributes("-topmost", True)
-        self.settings_window.lift()
-        self.settings_window.focus()
+    def open_settings(self):
+        win = CTkToplevel(self)
+        win.title("Settings")
+        win.attributes("-topmost", True)
+        win.lift()
 
-        self.settings_form_entries = []
-        self.settings_current_row = 0
+        frm_var = CTkFrame(win)
+        frm_const = CTkFrame(win)
+        frm_var.grid(row=0, column=0, padx=10, pady=10, sticky="n")
+        frm_const.grid(row=0, column=1, padx=10, pady=10, sticky="n")
 
-        def add_setting(label_text, default_value=None) :
-            label = CTkLabel(self.settings_window, text=label_text)
-            label.grid(row=self.settings_current_row, column=0, padx=10, pady=5, sticky="e")
+        # kolumny 1 i 2 (pola) nie rozciągają się
+        for frm in (frm_var, frm_const):
+            frm.grid_columnconfigure(1, weight=0)
+            frm.grid_columnconfigure(2, weight=0)
 
-            if label_text == "map_bitmap_path":
+        CTkLabel(frm_var, text="Variables").grid(row=0, column=0, columnspan=3, pady=(0, 10))
+        CTkLabel(frm_const, text="Constants").grid(row=0, column=0, columnspan=3, pady=(0, 10))
+
+        self._settings_widgets: Dict[str, Any] = {}
+
+        def add_row(frame, idx, name, default_val):
+            CTkLabel(frame, text=name).grid(row=idx, column=0, sticky="e", padx=5, pady=2)
+
+            if name == "map_bitmap_path":
                 def choose_file():
-                    file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png *.bmp *.jpg")])
-                    if file_path:
-                        button.configure(text="File: "  + file_path)
-                        self.selected_bitmap_path = file_path
+                    fp = filedialog.askopenfilename(
+                        filetypes=[("Image Files", "*.png *.bmp *.jpg")]
+                    )
+                    if fp:
+                        btn.configure(text=f"File: {fp}")
+                        self.selected_bitmap_path = fp
 
-                button = CTkButton(self.settings_window, text="Select file", command=choose_file)
-                button.grid(row=self.settings_current_row, column=1, padx=10, pady=5)
-
-
-                self.settings_current_row += 2
+                btn = CTkButton(frame, text="Select file", command=choose_file)
+                btn.grid(row=idx, column=1, padx=10, pady=8)
                 return
 
-            entry = CTkEntry(self.settings_window)
-            entry.grid(row=self.settings_current_row, column=1, padx=10, pady=5)
+            if isinstance(default_val, (tuple, list)):
+                bg = frame.cget("fg_color")
+                sub = tk.Frame(frame, bg=bg[1], bd=0, highlightthickness=0)
+                sub.grid(row=idx, column=1, padx=15, pady=4, sticky="w")
 
-            if default_value is not None:
-                entry.insert(0, str(default_value))
+                entries = []
+                for i, val in enumerate(default_val):
+                    entry = CTkEntry(sub, width=60)
+                    entry.pack(side="left", padx=(0, 4) if i < len(default_val) - 1 else 0)
+                    entry.insert(0, str(val))
+                    entries.append(entry)
 
-            self.settings_form_entries.append((label_text, entry))
-            self.settings_current_row += 1
-
-        for param_name, default_value in self.user_params.items() :
-            add_setting(param_name, default_value)
-
-        save_button = CTkButton(master=self.settings_window, text="Save", command=self.save_settings)
-        save_button.grid(row=self.settings_current_row, column=1, padx=10, pady=5)
-
-    def save_settings(self) :
-        new_user_params = {}
-
-        for (label_text, entry_widget) in self.settings_form_entries :
-            value_str = entry_widget.get()
-
-            new_user_params[label_text] = float(value_str)
+                self._settings_widgets[name] = tuple(entries)
 
 
-        self.user_params = new_user_params
-        self.user_params["map_bitmap_path"] = self.selected_bitmap_path
-        self.notify_observers(self.user_params)
-        self.settings_window.destroy()
+            else:
+                ent = CTkEntry(frame, width=120)
+                ent.grid(row=idx, column=1, columnspan=2, padx=15, pady=4, sticky="w")
+                ent.insert(0, str(default_val))
+                self._settings_widgets[name] = ent
 
-    def add_observer(self, observer):
-        self.observers.append(observer)
+        var_row = const_row = 1
+        for name, grp, _type, val in self.env_config.list_params():
+            if grp == "var":
+                add_row(frm_var, var_row, name, val)
+                var_row += 1
+            else:
+                add_row(frm_const, const_row, name, val)
+                const_row += 1
+
+        CTkButton(win, text="Save", command=lambda: self._save(win)).grid(
+            row=1, column=0, columnspan=2, pady=10
+        )
+
+    def _save(self, window: CTkToplevel):
+        env_variable, env_constant = {}, {}
+
+        for name, widget in self._settings_widgets.items():
+            if isinstance(widget, tuple):
+                values = []
+                for w in widget:
+                    text = w.get().strip()
+                    try:
+                        val = float(text)
+                    except ValueError:
+                        val = text
+                    values.append(val)
+                value = tuple(values)
+            else:
+                txt = widget.get().strip()
+                try:
+                    value = float(txt)
+                except ValueError:
+                    value = txt
+
+            grp = self.env_config.entry(name).group
+            (env_variable if grp == "var" else env_constant)[name] = value
+
+        if not self.selected_bitmap_path:
+            env_variable["map_bitmap_path"] = self.env_config.get("map_bitmap_path")
+        else:
+            env_variable["map_bitmap_path"] = self.selected_bitmap_path
+
+        new_raw = {"env_variable": env_variable, "env_constant": env_constant}
+
+        self.notify_observers(new_raw)
+
+        window.destroy()
+
+    def add_observer(self, cb):
+        self.observers.append(cb)
 
     def notify_observers(self, data=None):
-        for callback in self.observers:
-            callback(data)
+        for cb in self.observers:
+            cb(data)

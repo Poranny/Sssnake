@@ -1,7 +1,6 @@
 import math
 
-
-class EnvCollision() :
+class EnvCollision :
     def __init__(self):
         self.obstacles_map = []
 
@@ -9,18 +8,12 @@ class EnvCollision() :
         self.wall_hit_distance = 1
         self.obstacle_hit_distance = 1
 
-
     def hit_anything(self, state):
-        hit = False
-        hit = hit or self.hit_tail(state)
-
-        if not hit :
-            hit = hit or self.hit_wall(state)
-
-        if not hit :
-            hit = hit or self.hit_obstacle(state)
-
-        return hit
+        return (
+            self.hit_tail(state) or
+            self.hit_wall(state) or
+            self.hit_obstacle(state)
+        )
 
     def hit_obstacle(self, state):
         if not state["safe_map_snake"]:

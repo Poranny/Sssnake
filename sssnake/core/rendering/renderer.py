@@ -22,7 +22,6 @@ class Renderer:
         self.base_bg = None
         self.obstacles_texture = None
 
-        self.render_info = {}
         self.obstacles_map = {}
         self.mult_x = 1
         self.mult_y = 1
@@ -30,30 +29,29 @@ class Renderer:
         self.offscreen = Image.new("RGBA", (self.high_res_width, self.high_res_height), "black")
         self.draw = ImageDraw.Draw(self.offscreen)
 
-    def set_renderinfo(self, render_info):
-        self.render_info = render_info
+    def set_render_config(self, render_config):
         self.obstacles_texture = None
 
-        obstacles_map_path = self.render_info.get("map_bitmap_path")
+        obstacles_map_path = render_config.get("map_bitmap_path")
+
         obstacles_map = load_obstacles_map(obstacles_map_path)
 
         if obstacles_map:
-            if self.obstacles_texture is None:
-                arr = np.array(obstacles_map, dtype=np.uint8) * 255
-                w, h = self.offscreen.size
-                bg_img = Image.fromarray(arr, mode="L").resize((w, h), Image.NEAREST)
-                bg_img = bg_img.convert("RGB")
+            arr = np.array(obstacles_map, dtype=np.uint8) * 255
+            w, h = self.offscreen.size
+            bg_img = Image.fromarray(arr, mode="L").resize((w, h), Image.NEAREST)
+            bg_img = bg_img.convert("RGB")
 
-                self.obstacles_texture = add_corners(
-                    bg_img,
-                    rad=5 * self.supersample_factor,
-                    fill_color=self.parent_bg_col[1]
-                )
+            self.obstacles_texture = add_corners(
+                bg_img,
+                rad=5 * self.supersample_factor,
+                fill_color=self.parent_bg_col[1]
+            )
 
             self.offscreen.paste(self.obstacles_texture, (0, 0))
 
-        self.mult_x = (self.width * self.supersample_factor) / render_info["map_size_x"]
-        self.mult_y = (self.height * self.supersample_factor) / render_info["map_size_y"]
+        self.mult_x = (self.width * self.supersample_factor) / render_config.get("map_size")[0]
+        self.mult_y = (self.height * self.supersample_factor) / render_config.get("map_size")[1]
 
     def set_parent(self, parent):
         self.parent_bg_col = parent.cget("fg_color")

@@ -2,6 +2,7 @@ import json
 
 from customtkinter import *
 
+from sssnake.utils.env_config import EnvConfig
 from sssnake.core.game.game_controls import GameControls
 from sssnake.core.env.env_engine import EnvEngine
 from sssnake.core.game.game_loop import GameLoop
@@ -10,6 +11,7 @@ from sssnake.utils.config import GAMECONFIG
 from sssnake.utils.theme_loader import get_theme_path
 from sssnake.ui.views import MainView
 from sssnake.core.lifecycle_manager import AppLifecycleManager
+
 
 class App:
     def __init__(self):
@@ -24,18 +26,17 @@ class App:
         set_appearance_mode('dark')
         set_default_color_theme(get_theme_path('Cobalt'))
 
-        params_path="sssnake/utils/default_params.json"
-        with open(params_path, "r") as f :
-            self.user_params = json.load(f)
-
-        self.env = EnvEngine()
-        self.env.reset_env(self.user_params)
+        user_params = self.load_json_params()
+        self.env_config = EnvConfig(user_params)
 
         self.renderer = Renderer(width=600, height=600)
-        self.renderer.set_renderinfo(self.user_params)
+        self.renderer.set_render_config(self.env_config)
 
-        self.main_menu = MainView(self.app, self.renderer, self.user_params)
+        self.main_menu = MainView(self.app, self.renderer, self.env_config)
         self.main_menu.add_observer(self.on_mainview)
+
+        self.env = EnvEngine()
+        #self.env.reset_env(self.env_config)
 
         self.controls = GameControls(self.app)
 
@@ -46,10 +47,10 @@ class App:
             game_controls=self.controls,
             renderer=self.renderer
         )
-        self.game_loop.set_params(self.user_params)
+
+        self.game_loop.set_config(self.env_config)
 
     def on_mainview(self, data):
-
         if isinstance(data, str) :
             if data == "Play" :
                 self.start_game()
@@ -61,11 +62,11 @@ class App:
                 print("Mainview command unknown")
 
         elif isinstance(data, dict) :
-            self.user_params = data
-            self.game_loop.set_params(data)
-
-            self.env.reset_env(self.user_params)
-            self.renderer.set_renderinfo(self.user_params)
+            self.env_config = EnvConfig(data)
+            self.game_loop.set_config(self.env_config)
+            self.main_menu.set_config(self.env_config)
+            #self.env.reset_env(self.env_config)
+            self.renderer.set_render_config(self.env_config)
 
         else :
             print("Mainview command unknown")
@@ -80,3 +81,10 @@ class App:
 
     def run(self):
         self.app.mainloop()
+
+    def load_json_params(self):
+        params_path = "sssnake/utils/default_params.json"
+        with open(params_path, "r") as f:
+            user_params = dict(json.load(f))
+
+        return user_params

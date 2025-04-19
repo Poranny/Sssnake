@@ -3,7 +3,7 @@ import threading
 class GameLoop:
     def __init__(self, master, app, env_engine, game_controls, renderer):
 
-        self.user_params = None
+        self.env_config = None
         self.app = app
         self.controls = game_controls
         self.renderer = renderer
@@ -21,14 +21,13 @@ class GameLoop:
 
     def start_game(self):
         self.end_game_loop()
-        self.env.reset_env(self.user_params)
+        self.env.reset_env(self.env_config)
 
         self.play_on = True
         self.game_loop()
 
     def pause_game(self):
         self.end_game_loop()
-        self.env.reset_env(self.user_params)
 
         self.play_on = False
 
@@ -53,5 +52,6 @@ class GameLoop:
             else :
                 print("Env command unknown")
 
-    def set_params (self, params):
-        self.user_params = params
+    def set_config (self, env_config):
+        self.env_config = env_config
+        self.env.reset_env(env_config)

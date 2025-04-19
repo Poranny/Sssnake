@@ -1,8 +1,6 @@
-
 from PIL import Image
 
 def load_obstacles_map(path) :
-
     if path == "" :
         return None
 

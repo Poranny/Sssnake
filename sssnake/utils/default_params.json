@@ -1,7 +1,25 @@
 {
-  "map_size_x": 30,
-  "map_size_y": 30,
-  "snake_speed": 0.25,
-  "snake_turnspeed" : 5,
-  "map_bitmap_path" : ""
+  "env_variable": {
+    "snake_pos" : [20, 20],
+    "snake_dir" : 1,
+
+    "snake_speed": 0.25,
+    "snake_turnspeed": 5,
+
+    "map_size": [30, 30],
+
+    "map_bitmap_path": ""
+  },
+
+  "env_constant": {
+    "candy_collect_distance" : 2,
+    "candy_pos_wall_distance" : 2,
+    "candy_pos_obstacle_distance" : 2,
+
+    "hit_tail_distance" : 1,
+    "hit_wall_distance" : 1,
+    "hit_obstacle_distance" : 1,
+
+    "tail_segment_length" : 1.5
+  }
 }

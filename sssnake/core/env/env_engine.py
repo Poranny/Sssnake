@@ -25,8 +25,8 @@ class EnvEngine:
             self.config = config
 
         self.state = {
-            "head_position": self.config.get("snake_pos"),
-            "head_direction": self.config.get("snake_dir"),
+            "head_position": (0, 0),
+            "head_direction": self.config.get("start_dir"),
             "segments_num": 0,
             "segments_positions": [],
             "speed": self.config.get("snake_speed"),
@@ -37,6 +37,9 @@ class EnvEngine:
 
         self.env_candies.set_map_size(self.state["map_size"])
         self.calculate_obstacles_map(self.config)
+
+        start_coords = self.config.get("start_pos_coords")
+        self.state["head_position"] = start_coords[0] * self.state["map_size"][0], start_coords[1] * self.state["map_size"][1]
 
         self.head_path = [self.state["head_position"]]
 

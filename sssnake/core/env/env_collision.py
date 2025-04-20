@@ -55,9 +55,7 @@ class EnvCollision :
         for segment_pos in state["segments_positions"]:
             cpx, cpy = segment_pos
             distance = math.sqrt((hpx - cpx) ** 2 + (hpy - cpy) ** 2)
-            print(distance)
-            print(self.tail_hit_distance)
-            print()
+
             if distance < self.tail_hit_distance :
                 hit = True
                 break

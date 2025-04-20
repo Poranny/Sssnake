@@ -44,7 +44,6 @@ class EnvEngine:
 
         self.state["candy_position"] = self.env_candies.random_candy_pos(self.state)
 
-
     def step (self, action):
         new_state = self.state
 
@@ -135,11 +134,7 @@ class EnvEngine:
         state["segments_positions"].append((last_pos_x + last_dir_x * self.segment_length, last_pos_y + last_dir_y * self.segment_length))
 
     def calculate_obstacles_map(self, env_config):
-        obstacles_map = load_obstacles_map(env_config.get("map_bitmap_path"))
-
-        if obstacles_map is None :
-            self.state["safe_map_snake"] = [[1] * 40 for _ in range(40)]
-            return
+        obstacles_map = load_obstacles_map(env_config.get("map_bitmap_path"), env_config.get("collision_map_resolution"))
 
         map_size = env_config.get("map_size")[0], env_config.get("map_size")[1]
 

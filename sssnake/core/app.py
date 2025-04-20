@@ -12,7 +12,6 @@ from sssnake.utils.theme_loader import get_theme_path
 from sssnake.ui.views import MainView
 from sssnake.core.lifecycle_manager import AppLifecycleManager
 
-
 class App:
     def __init__(self):
 
@@ -29,11 +28,13 @@ class App:
         user_params = self.load_json_params()
         self.env_config = EnvConfig(user_params)
 
-        self.renderer = Renderer(width=600, height=600)
-        self.renderer.set_render_config(self.env_config)
 
-        self.main_menu = MainView(self.app, self.renderer, self.env_config)
+        self.main_menu = MainView(self.app, self.env_config)
         self.main_menu.add_observer(self.on_mainview)
+
+        self.renderer = Renderer(width=600, height=600)
+        self.renderer.set_parent(self.main_menu)
+        self.renderer.set_render_config(self.env_config)
 
         self.env = EnvEngine(self.env_config)
 
@@ -61,7 +62,7 @@ class App:
                 print("Mainview command unknown")
 
         elif isinstance(data, dict) :
-            self.env_config = EnvConfig(data)
+            self.env_config.update(data)
             self.game_loop.set_config(self.env_config)
             self.main_menu.set_config(self.env_config)
 

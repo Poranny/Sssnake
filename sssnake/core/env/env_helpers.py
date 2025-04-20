@@ -1,18 +1,19 @@
 from PIL import Image
 
-def load_obstacles_map(path) :
+def load_obstacles_map(path, col_res) :
     if path == "" :
-        return None
+        return [[0] * col_res for _ in range(col_res)]
 
     img = Image.open(path).convert("L")
-    map_w, map_h = img.size
-    pixels = list(img.getdata())
+    img_rescaled = img.resize((col_res, col_res), Image.LANCZOS)
 
+    pixels = list(img_rescaled.getdata())
     obstacles_map = [
-        [1 if p > 128 else 0 for p in pixels[row_start: row_start + map_w]]
-        for row_start in range(0, map_w * map_h, map_w)
+        [1 if p > 128 else 0 for p in pixels[row_start: row_start + col_res]]
+        for row_start in range(0, col_res * col_res, col_res)
     ]
     return obstacles_map
+
 
 def generate_safe_map(margin_units, map_size, obstacles_map):
     obstacles_w, obstacles_h = len(obstacles_map[0]), len(obstacles_map)

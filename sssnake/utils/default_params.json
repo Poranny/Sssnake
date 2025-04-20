@@ -13,14 +13,16 @@
 
   "env_constant": {
     "candy_collect_distance" : 2,
-    "candy_pos_wall_distance" : 2,
-    "candy_pos_obstacle_distance" : 2,
+    "candy_pos_wall_distance" : 3,
+    "candy_pos_obstacle_distance" : 1.5,
     "candy_head_distance" : 10,
 
     "hit_tail_distance" : 1,
     "hit_wall_distance" : 1,
     "hit_obstacle_distance" : 1,
 
-    "tail_segment_length" : 1.5
+    "tail_segment_length" : 1.5,
+
+    "collision_map_resolution" : 40
   }
 }

@@ -1,70 +1,74 @@
 import tkinter as tk
-from PIL import Image, ImageDraw, ImageTk
-import numpy as np
+from PIL import Image, ImageTk
+import aggdraw
 
-from sssnake.core.env.env_helpers import load_obstacles_map
 from sssnake.core.rendering.canvas_corners_masking import add_corners
 
 class Renderer:
-    def __init__(self, width, height, supersample_factor=3):
-        self.supersample_factor = supersample_factor
+    def __init__(self, width, height):
+        self.parent = None
         self.width = width
         self.height = height
 
-        self.high_res_width = width * self.supersample_factor
-        self.high_res_height = height * self.supersample_factor
+        self.offscreen = Image.new("RGBA", (self.width, self.height), "black")
+        self.draw = aggdraw.Draw(self.offscreen)
+        self.pen = aggdraw.Pen("white", 1)
+        self.brush = aggdraw.Brush("white")
 
         self.canvas_id = None
         self.canvas = None
-        self.frame_buffer  = None
+        self.frame_buffer = None
         self.parent_bg_col = None
 
         self.base_bg = None
         self.obstacles_texture = None
 
         self.obstacles_map = {}
-        self.mult_x = 1
-        self.mult_y = 1
 
-        self.offscreen = Image.new("RGBA", (self.high_res_width, self.high_res_height), "black")
-        self.draw = ImageDraw.Draw(self.offscreen)
+    def _load_background_texture(self, img_path: str) -> Image.Image:
+        if not img_path:
+            return None
+
+        tex = (
+            Image.open(img_path)
+                 .convert("L")
+                 .resize((self.width, self.height), Image.LANCZOS)
+                 .convert("RGBA")
+        )
+        return add_corners(tex, rad=5, fill_color=self.parent_bg_col[1])
 
     def set_render_config(self, render_config):
         self.obstacles_texture = None
 
-        obstacles_map_path = render_config.get("map_bitmap_path")
+        bg_path = render_config.get("map_bitmap_path")
+        if bg_path and self.parent:
+            self.obstacles_texture = self._load_background_texture(bg_path)
+            if self.obstacles_texture:
+                self.offscreen.paste(
+                    self.obstacles_texture, (0, 0), self.obstacles_texture
+                )
 
-        obstacles_map = load_obstacles_map(obstacles_map_path)
+    def set_parent(self, mainview):
+        self.parent = mainview.get_render_frame()
+        self.parent_bg_col = self.parent.cget("fg_color")
 
-        if obstacles_map:
-            arr = np.array(obstacles_map, dtype=np.uint8) * 255
-            w, h = self.offscreen.size
-            bg_img = Image.fromarray(arr, mode="L").resize((w, h), Image.NEAREST)
-            bg_img = bg_img.convert("RGB")
+        self.canvas = tk.Canvas(
+            self.parent,
+            width=self.width,
+            height=self.height,
+            bg=self.parent_bg_col[1],
+            highlightthickness=0
+        )
 
-            self.obstacles_texture = add_corners(
-                bg_img,
-                rad=5 * self.supersample_factor,
-                fill_color=self.parent_bg_col[1]
-            )
-
-            self.offscreen.paste(self.obstacles_texture, (0, 0))
-
-        self.mult_x = (self.width * self.supersample_factor) / render_config.get("map_size")[0]
-        self.mult_y = (self.height * self.supersample_factor) / render_config.get("map_size")[1]
-
-    def set_parent(self, parent):
-        self.parent_bg_col = parent.cget("fg_color")
-        self.canvas = tk.Canvas(parent, width=self.width, height=self.height, bg="white", highlightthickness=0)
         self.canvas.pack(expand=True, fill=tk.BOTH, padx=6, pady=6)
 
-        base = Image.new("RGBA", (self.high_res_width, self.high_res_height), "black")
-        self.base_bg = add_corners(base, rad=5 * self.supersample_factor, fill_color=self.parent_bg_col[1])
-
+        base = Image.new("RGBA", (self.width, self.height), "black")
+        self.base_bg = add_corners(base, rad=5, fill_color=self.parent_bg_col[1])
         self.offscreen.paste(self.base_bg, (0, 0))
 
-        self.frame_buffer = ImageTk.PhotoImage(self.back_original_size())
+        self.frame_buffer = ImageTk.PhotoImage(self.offscreen)
         self.canvas_id = self.canvas.create_image(0, 0, anchor="nw", image=self.frame_buffer)
+        self.clear()
 
     def clear(self):
         if self.base_bg is not None:
@@ -72,70 +76,46 @@ class Renderer:
         else:
             self.offscreen.paste(
                 "black",
-                (0, 0, self.high_res_width, self.high_res_height)
+                (0, 0, self.width, self.height)
             )
-
         if self.obstacles_texture is not None:
             self.offscreen.paste(self.obstacles_texture, (0, 0), self.obstacles_texture)
 
-    def compute_render(self, state: dict):
+    def compute_render(self, state: dict) -> Image.Image:
         self.clear()
+        self.draw = aggdraw.Draw(self.offscreen)
 
-        head_x, head_y = state["head_position"]
-        candy_x, candy_y = state["candy_position"]
-        radius_head = 1.25
-        radius_seg = 1
-        radius_candy = 1
+        head_r = 1.25
+        seg_r = 1
+        candy_r = 1
 
-        self.draw.ellipse(
-            (
-                (head_x - radius_head) * self.mult_x,
-                (head_y - radius_head) * self.mult_y,
-                (head_x + radius_head) * self.mult_x,
-                (head_y + radius_head) * self.mult_y,
-            ),
-            fill="white"
-        )
-
-        self.draw.ellipse(
-            (
-                (candy_x - radius_candy) * self.mult_x,
-                (candy_y - radius_candy) * self.mult_y,
-                (candy_x + radius_candy) * self.mult_x,
-                (candy_y + radius_candy) * self.mult_y,
-            ),
-            fill="white"
-        )
-
-        for segment_pos in state["segments_positions"]:
-            seg_x, seg_y = segment_pos
-            self.draw.ellipse(
-                (
-                    (seg_x - radius_seg) * self.mult_x,
-                    (seg_y - radius_seg) * self.mult_y,
-                    (seg_x + radius_seg) * self.mult_x,
-                    (seg_y + radius_seg) * self.mult_y,
-                ),
-                fill="white"
+        def draw_circle(x, y, r):
+            bbox = (
+                (x - r) * (self.width / state['map_size'][0]),
+                (y - r) * (self.height / state['map_size'][1]),
+                (x + r) * (self.width / state['map_size'][0]),
+                (y + r) * (self.height / state['map_size'][1]),
             )
+            self.draw.ellipse(bbox, self.brush)
 
-        final_img = self.back_original_size() if self.supersample_factor > 1 else self.offscreen
-        return final_img
+        hx, hy = state['head_position']
+        draw_circle(hx, hy, head_r)
 
-    def update_canvas(self, final_img):
+        cx, cy = state['candy_position']
+        draw_circle(cx, cy, candy_r)
+
+        for sx, sy in state['segments_positions']:
+            draw_circle(sx, sy, seg_r)
+
+        self.draw.flush()
+
+        return self.offscreen
+
+    def update_canvas(self, final_img: Image.Image):
         self.frame_buffer = ImageTk.PhotoImage(final_img)
-        if self.canvas_id is not None:
-            self.canvas.itemconfig(self.canvas_id, image=self.frame_buffer)
-
-    def back_original_size(self):
-        return self.offscreen.resize((self.width, self.height))
-
-    def offscreen_render(self):
-        final_img = self.back_original_size() if self.supersample_factor > 1 else self.offscreen
-        self.frame_buffer = ImageTk.PhotoImage(final_img)
-        if self.canvas_id is not None:
+        if self.canvas_id:
             self.canvas.itemconfig(self.canvas_id, image=self.frame_buffer)
 
     def async_render(self, state: dict):
-        final_img = self.compute_render(state)
-        self.canvas.after(0, lambda: self.update_canvas(final_img))
+        final = self.compute_render(state)
+        self.canvas.after(0, lambda: self.update_canvas(final))

@@ -5,21 +5,21 @@ from typing import Dict, Any
 
 from sssnake.utils.env_config import EnvConfig
 
-
 class MainView(CTkFrame):
 
-    def __init__(self, master, renderer, env_config: EnvConfig):
+    def __init__(self, master, env_config: EnvConfig):
         super().__init__(master)
+        self.env_config = None
+
+        self.game_frame = CTkFrame(master)
+        self.game_frame.grid(row=0, column=0, padx=20, pady=20)
+
         self.set_config(env_config)
-        self.renderer = renderer
         self.observers = []
 
         self.grid_columnconfigure(0, weight=3)
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
-
-        self.game_frame = CTkFrame(master)
-        self.game_frame.grid(row=0, column=0, padx=20, pady=20)
 
         self.menu_frame = CTkFrame(master)
         self.menu_frame.grid(row=0, column=1, padx=20, pady=20)
@@ -32,10 +32,11 @@ class MainView(CTkFrame):
         self.btn_settings.grid(row=1, column=0, padx=20, pady=20)
         self.btn_exit.grid(row=2, column=0, padx=20, pady=20)
 
-        self.renderer.set_parent(self.game_frame)
-
         self.is_playing = False
         self.selected_bitmap_path = ""
+
+    def get_render_frame(self):
+        return self.game_frame
 
     def set_config(self, cfg: EnvConfig):
         self.env_config = cfg

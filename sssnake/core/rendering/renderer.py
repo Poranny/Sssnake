@@ -66,8 +66,9 @@ class Renderer:
         self.base_bg = add_corners(base, rad=5, fill_color=self.parent_bg_col[1])
         self.offscreen.paste(self.base_bg, (0, 0))
 
-        self.frame_buffer = ImageTk.PhotoImage(self.offscreen)
-        self.canvas_id = self.canvas.create_image(0, 0, anchor="nw", image=self.frame_buffer)
+        self.frame_buffer = ImageTk.PhotoImage(self.offscreen)  # tylko raz
+        self.canvas_id = self.canvas.create_image(0, 0, anchor="nw",
+                                                  image=self.frame_buffer)
         self.clear()
 
     def clear(self):
@@ -112,9 +113,7 @@ class Renderer:
         return self.offscreen
 
     def update_canvas(self, final_img: Image.Image):
-        self.frame_buffer = ImageTk.PhotoImage(final_img)
-        if self.canvas_id:
-            self.canvas.itemconfig(self.canvas_id, image=self.frame_buffer)
+        self.frame_buffer.paste(final_img)
 
     def async_render(self, state: dict):
         final = self.compute_render(state)

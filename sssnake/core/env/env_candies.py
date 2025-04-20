@@ -20,18 +20,18 @@ class EnvCandies :
         self.map_size = map_size
 
     def random_candy_pos(self, state):
-        max_search = 20
+        head = state["head_position"]
 
-        while True:
-            max_search -= 1
-            if self.free_pos_candy:
-                x_pos, y_pos = random.choice(self.free_pos_candy)
-            else:
-                x_pos, y_pos = self.random_candy_pos_nomap()
+        available = [
+            pos for pos in self.free_pos_candy.copy()
+            if math.dist(pos, head) >= self.candy_head_distance
+        ]
 
-            dist_to_head = math.sqrt((x_pos - state["head_position"][0]) ** 2 + (y_pos - state["head_position"][1]) ** 2)
-            if dist_to_head > self.candy_head_distance or max_search == 0:
-                return x_pos, y_pos
+        if available:
+            return random.choice(available)
+
+        return self.random_candy_pos_nomap()
+
 
     def random_candy_pos_nomap(self):
         min_dist = self.candy_wall_distance

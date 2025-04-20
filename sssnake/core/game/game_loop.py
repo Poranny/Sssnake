@@ -16,7 +16,7 @@ class GameLoop:
         self.play_on = False
         self.loop_id = None
 
-        self.fps = 60
+        self.fps = 90
         self.frame_ms = int(1000 / self.fps)
 
     def start_game(self):

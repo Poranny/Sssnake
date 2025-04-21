@@ -2,10 +2,8 @@ import math
 import random
 import tkinter as tk
 from PIL import Image, ImageTk
-import aggdraw
 
 from sssnake.core.rendering.canvas_corners_masking import add_corners
-
 
 class Renderer:
 
@@ -16,18 +14,15 @@ class Renderer:
 
         self.offscreen = Image.new("RGBA", (self.width, self.height), "black")
 
-        self._brush_white = aggdraw.Brush("white")
-
         self.canvas = None
         self.frame_buffer = None
         self.parent_bg_col = None
 
         self.base_bg = None
         self.obstacles_texture = None
-
         self._head_sprite_base = Image.open("data/textures/head.png").convert("RGBA")
         self._segment_sprite_base = Image.open("data/textures/segment.png").convert("RGBA")
-        self._candy_sprite_base   = Image.open("data/textures/candy.png").convert("RGBA")
+        self._candy_sprite_base = Image.open("data/textures/candy.png").convert("RGBA")
 
         self._sprite_cache: dict[tuple[int, int], Image.Image] = {}
         self._candy_angles: dict[tuple[int, int], float] = {}
@@ -37,8 +32,7 @@ class Renderer:
         try:
             return self._sprite_cache[key]
         except KeyError:
-            if size < 1:
-                size = 1
+            size = max(1, size)
             sprite = base.resize((size, size), Image.LANCZOS)
             self._sprite_cache[key] = sprite
             return sprite
@@ -48,9 +42,9 @@ class Renderer:
             return None
         tex = (
             Image.open(img_path)
-                 .convert("L")
-                 .resize((self.width, self.height), Image.LANCZOS)
-                 .convert("RGBA")
+            .convert("L")
+            .resize((self.width, self.height), Image.LANCZOS)
+            .convert("RGBA")
         )
         return add_corners(tex, rad=5, fill_color=self.parent_bg_col[1])
 
@@ -98,10 +92,8 @@ class Renderer:
         self.clear()
 
         map_w, map_h = state["map_size"]
-        head_r, seg_r, candy_r = 1.5, 1.3, 1.45
 
-        seg_px = max(1, int(2 * seg_r * self.width / map_w))
-        base_seg_sprite = self._get_sprite(self._segment_sprite_base, seg_px)
+        head_r, seg_r, candy_r = 1.5, 1.3, 1.45
 
         cx, cy = state["candy_position"]
         candy_px = max(1, int(2 * candy_r * self.width / map_w))
@@ -126,15 +118,12 @@ class Renderer:
             candy_sprite,
         )
 
+        seg_px = max(1, int(2 * seg_r * self.width / map_w))
+        base_seg_sprite = self._get_sprite(self._segment_sprite_base, seg_px)
+
         for idx, (sx, sy) in enumerate(state["segments_positions"]):
-            if idx == 0:
-                tx, ty = state["head_position"]
-            else:
-                tx, ty = state["segments_positions"][idx - 1]
-
-            dx = tx - sx
-            dy = ty - sy
-
+            tx, ty = (state["head_position"] if idx == 0 else state["segments_positions"][idx - 1])
+            dx, dy = tx - sx, ty - sy
             angle = math.degrees(math.atan2(-dy, dx)) + 90
 
             seg_sprite = base_seg_sprite.rotate(angle, expand=True, resample=Image.BICUBIC)
@@ -154,9 +143,7 @@ class Renderer:
         head_px = max(1, int(2 * head_r * self.width / map_w))
 
         head_sprite = self._get_sprite(self._head_sprite_base, head_px)
-
         head_sprite = head_sprite.rotate(head_angle, expand=True, resample=Image.BICUBIC)
-
         hw, hh = head_sprite.size
 
         self.offscreen.paste(
@@ -168,8 +155,6 @@ class Renderer:
             head_sprite,
         )
 
-
-
         return self.offscreen
 
     def _update_canvas(self, final_img):
@@ -177,5 +162,4 @@ class Renderer:
 
     def async_render(self, state: dict):
         final = self.compute_render(state)
-
         self.canvas.after(0, lambda img=final: self._update_canvas(img))

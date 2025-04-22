@@ -28,11 +28,10 @@ class App:
         user_params = self.load_json_params()
         self.env_config = EnvConfig(user_params)
 
-
         self.main_menu = MainView(self.app, self.env_config)
         self.main_menu.add_observer(self.on_mainview)
 
-        self.renderer = Renderer(width=600, height=600)
+        self.renderer = Renderer(width=1200, height=600)
         self.renderer.set_parent(self.main_menu)
         self.renderer.set_render_config(self.env_config)
 

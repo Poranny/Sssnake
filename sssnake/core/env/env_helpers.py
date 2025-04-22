@@ -1,16 +1,15 @@
 from PIL import Image
-
-def load_obstacles_map(path, col_res) :
-    if path == "" :
-        return [[0] * col_res for _ in range(col_res)]
+def load_obstacles_map(path, col_res):
+    if path == "":
+        return [[0] * col_res[0] for _ in range(col_res[1])]
 
     img = Image.open(path).convert("L")
-    img_rescaled = img.resize((col_res, col_res), Image.LANCZOS)
+    img_rescaled = img.resize((col_res[0], col_res[1]), Image.LANCZOS)
 
     pixels = list(img_rescaled.getdata())
     obstacles_map = [
-        [1 if p > 128 else 0 for p in pixels[row_start: row_start + col_res]]
-        for row_start in range(0, col_res * col_res, col_res)
+        [1 if p > 128 else 0 for p in pixels[row_start: row_start + col_res[0]]]
+        for row_start in range(0, col_res[0] * col_res[1], col_res[0])
     ]
     return obstacles_map
 

@@ -18,6 +18,7 @@ class EnvCandies :
 
     def set_map_size(self, map_size):
         self.map_size = map_size
+        print(self.map_size)
 
     def random_candy_pos(self, state):
         head = state["head_position"]

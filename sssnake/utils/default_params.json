@@ -24,7 +24,7 @@
     "tail_segment_length" : 1.5,
     "tail_max_segment" : 200,
 
-    "collision_map_resolution" : 40,
+    "collision_map_resolution" : 20,
 
     "max_num_steps" : 10000
   }

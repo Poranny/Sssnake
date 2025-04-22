@@ -26,7 +26,7 @@ class EnvCollision :
         w, h = len(state["safe_map_snake"][0]), len(state["safe_map_snake"])
 
         px = int(hx / state["map_size"][0] * w)
-        py = int(hy / state["map_size"][1]  * h)
+        py = int(hy / state["map_size"][1] * h)
 
         px = max(0, min(w - 1, px))
         py = max(0, min(h - 1, py))

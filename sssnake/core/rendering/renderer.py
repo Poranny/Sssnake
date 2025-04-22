@@ -68,6 +68,7 @@ class Renderer:
             bg=self.parent_bg_col[1],
             highlightthickness=0,
         )
+
         self.canvas.pack(expand=True, fill=tk.BOTH, padx=6, pady=6)
 
         base = Image.new("RGBA", (self.width, self.height), "black")
@@ -121,7 +122,7 @@ class Renderer:
         seg_px = max(1, int(2 * seg_r * self.width / map_w))
         base_seg_sprite = self._get_sprite(self._segment_sprite_base, seg_px)
 
-        for idx, (sx, sy) in enumerate(state["segments_positions"]):
+        for idx, (sx, sy) in enumerate(state["segments_positions"][:state["segments_num"]]):
             tx, ty = (state["head_position"] if idx == 0 else state["segments_positions"][idx - 1])
             dx, dy = tx - sx, ty - sy
             angle = math.degrees(math.atan2(-dy, dx)) + 90

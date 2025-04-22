@@ -32,7 +32,6 @@ class EnvCandies :
 
         return self.random_candy_pos_nomap()
 
-
     def random_candy_pos_nomap(self):
         min_dist = self.candy_wall_distance
         max_x = self.map_size[0] - min_dist
@@ -72,7 +71,6 @@ class EnvCandies :
             for x in range(obstacles_w):
                 if safe_map_candy[y][x] == 1:
                     free_cells_candy.append((x, y))
-
 
         self.free_pos_candy = [
             (x * (self.map_size[0] / obstacles_w),

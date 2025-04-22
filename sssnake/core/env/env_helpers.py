@@ -14,7 +14,6 @@ def load_obstacles_map(path, col_res) :
     ]
     return obstacles_map
 
-
 def generate_safe_map(margin_units, map_size, obstacles_map):
     obstacles_w, obstacles_h = len(obstacles_map[0]), len(obstacles_map)
 

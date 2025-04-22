@@ -7,9 +7,8 @@ from sssnake.utils.env_config import EnvConfig
 from sssnake.core.env.env_helpers import load_obstacles_map, generate_safe_map
 
 class EnvEngine:
-
     def __init__(self, env_config: EnvConfig):
-        self.config = None
+        self.config = env_config
         self.state = dict()
         self.observers = list()
 
@@ -19,6 +18,8 @@ class EnvEngine:
         self.env_collision = EnvCollision(env_config)
         self.env_candies = EnvCandies(env_config)
 
+        self.current_reward = 0
+
     def reset_env(self, config: EnvConfig = None) :
         if config is not None:
             self.config = config
@@ -27,11 +28,12 @@ class EnvEngine:
             "head_position": (0, 0),
             "head_direction": self.config.get("start_dir"),
             "segments_num": 0,
-            "segments_positions": [],
+            "segments_positions": [(0, 0) for _ in range(self.config.get("tail_max_segment"))],
             "speed": self.config.get("snake_speed"),
             "turnspeed": self.config.get("snake_turnspeed"),
             "map_size": (self.config.get("map_size")[0], self.config.get("map_size")[1]),
             "candy_position": (10.0, 10.0),
+            "safe_map_snake": [[0 for _ in range(self.config.get("collision_map_resolution"))] for _ in range(self.config.get("collision_map_resolution"))]
         }
 
         self.env_candies.set_map_size(self.state["map_size"])
@@ -44,7 +46,12 @@ class EnvEngine:
 
         self.state["candy_position"] = self.env_candies.random_candy_pos(self.state)
 
+        self.current_reward = 0
+        self.num_steps = 0
+
     def step (self, action):
+        terminated, truncated = False, False
+
         new_state = self.state
 
         speed = self.state["speed"]
@@ -67,22 +74,31 @@ class EnvEngine:
 
         self.head_path.append(new_state["head_position"])
 
+        if self.env_collision.hit_anything(new_state) :
+            self.state = new_state
+            self.hit_done()
+            terminated = True
+            return
+
+        if self.env_candies.met_candy(new_state) :
+            if self.config.get("tail_max_segment") > self.state["segments_num"] :
+                self.add_segment(new_state)
+            self.current_reward += 1
+            new_state["candy_position"] = self.env_candies.random_candy_pos(self.state)
+
+
         for i in range(new_state["segments_num"]):
             distance_behind_head = (i + 1) * self.segment_length
             new_state["segments_positions"][i] = self.get_position_on_path(distance_behind_head)
 
-        if self.env_collision.hit_anything(new_state) :
-            self.state = new_state
-            self.hit_done()
-            return
-
-        if self.env_candies.met_candy(new_state) :
-            self.add_segment(new_state)
-            new_state["candy_position"] = self.env_candies.random_candy_pos(self.state)
+        self.num_steps += 1
 
         self.state = new_state
-        self.notify_observers(self.state)
 
+        if self.num_steps >= self.config.get("max_num_steps") and not terminated:
+            truncated = True
+
+        self.notify_observers(self.state)
 
     def get_position_on_path(self, distance_behind_head):
         if len(self.head_path) < 2:
@@ -130,8 +146,9 @@ class EnvEngine:
             else :
                 last_dir_x, last_dir_y = normalized_direction(state["segments_positions"][-1], state["segments_positions"][-2])
 
+        state["segments_positions"] [state["segments_num"]] = (last_pos_x + last_dir_x * self.segment_length,
+                                                               last_pos_y + last_dir_y * self.segment_length)
         state["segments_num"] += 1
-        state["segments_positions"].append((last_pos_x + last_dir_x * self.segment_length, last_pos_y + last_dir_y * self.segment_length))
 
     def calculate_obstacles_map(self, env_config):
         obstacles_map = load_obstacles_map(env_config.get("map_bitmap_path"), env_config.get("collision_map_resolution"))

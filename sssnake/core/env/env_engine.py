@@ -31,7 +31,7 @@ class EnvEngine:
             "segments_positions": [(0, 0) for _ in range(self.config.get("tail_max_segment"))],
             "speed": self.config.get("snake_speed"),
             "turnspeed": self.config.get("snake_turnspeed"),
-            "map_size": (self.config.get("map_size")[0], self.config.get("map_size")[1]),
+            "map_size": self.config.get("map_size"),
             "candy_position": (10.0, 10.0),
             "safe_map_snake": [[0 for _ in range(self.config.get("collision_map_resolution"))] for _ in range(self.config.get("collision_map_resolution"))]
         }
@@ -40,7 +40,7 @@ class EnvEngine:
         self.calculate_obstacles_map(self.config)
 
         start_coords = self.config.get("start_pos_coords")
-        self.state["head_position"] = start_coords[0] * self.state["map_size"][0], start_coords[1] * self.state["map_size"][1]
+        self.state["head_position"] = start_coords[0] * self.state["map_size"], start_coords[1] * self.state["map_size"]
 
         self.head_path = [self.state["head_position"]]
 
@@ -151,17 +151,9 @@ class EnvEngine:
         state["segments_num"] += 1
 
     def calculate_obstacles_map(self, env_config):
-        map_size = env_config.get("map_size")[0], env_config.get("map_size")[1]
+        map_size = env_config.get("map_size")
 
-        col_map_mult = min(map_size) / max(map_size)
-        smaller_res, bigger_res = int(env_config.get("collision_map_resolution") * col_map_mult), env_config.get("collision_map_resolution")
-
-        if map_size[0] > map_size[1] :
-           col_map_res = bigger_res, smaller_res
-        else :
-           col_map_res = smaller_res, bigger_res
-
-        obstacles_map = load_obstacles_map(env_config.get("map_bitmap_path"), col_map_res)
+        obstacles_map = load_obstacles_map(env_config.get("map_bitmap_path"), env_config.get("collision_map_resolution"))
 
         self.state["safe_map_snake"] = generate_safe_map(self.env_collision.obstacle_hit_distance, map_size, obstacles_map)
 

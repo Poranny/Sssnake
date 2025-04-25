@@ -12,13 +12,12 @@ class EnvCandies :
         self.candy_obstacle_distance = env_config.get("candy_pos_obstacle_distance")
         self.candy_head_distance = env_config.get("candy_head_distance")
 
-        self.map_size = 0, 0
+        self.map_size = 0
 
         self.free_pos_candy = None
 
     def set_map_size(self, map_size):
         self.map_size = map_size
-        print(self.map_size)
 
     def random_candy_pos(self, state):
         head = state["head_position"]
@@ -35,11 +34,10 @@ class EnvCandies :
 
     def random_candy_pos_nomap(self):
         min_dist = self.candy_wall_distance
-        max_x = self.map_size[0] - min_dist
-        max_y = self.map_size[1] - min_dist
+        max_pos = self.map_size - min_dist
 
-        rand_x = random.uniform(min_dist, max_x)
-        rand_y = random.uniform(min_dist, max_y)
+        rand_x = random.uniform(min_dist, max_pos)
+        rand_y = random.uniform(min_dist, max_pos)
         return rand_x, rand_y
 
     def met_candy(self, state):
@@ -52,8 +50,8 @@ class EnvCandies :
     def generate_free_cells_candy(self, obstacles_map):
         obstacles_w, obstacles_h = len(obstacles_map[0]), len(obstacles_map)
 
-        candy_margin_wall_x = max(int(self.candy_wall_distance * (obstacles_w / self.map_size[0])), 1)
-        candy_margin_wall_y = max(int(self.candy_wall_distance * (obstacles_h / self.map_size[1])), 1)
+        candy_margin_wall_x = max(int(self.candy_wall_distance * (obstacles_w / self.map_size)), 1)
+        candy_margin_wall_y = max(int(self.candy_wall_distance * (obstacles_h / self.map_size)), 1)
 
         safe_map_candy = generate_safe_map(self.candy_obstacle_distance, self.map_size, obstacles_map)
 
@@ -74,7 +72,7 @@ class EnvCandies :
                     free_cells_candy.append((x, y))
 
         self.free_pos_candy = [
-            (x * (self.map_size[0] / obstacles_w),
-             y * (self.map_size[1] / obstacles_h))
+            (x * (self.map_size / obstacles_w),
+             y * (self.map_size / obstacles_h))
             for (x, y) in free_cells_candy
         ]

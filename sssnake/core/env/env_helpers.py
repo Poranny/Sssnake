@@ -1,7 +1,7 @@
 from PIL import Image
 def load_obstacles_map(path, col_res):
     if path == "":
-        return [[0] * col_res[0] for _ in range(col_res[1])]
+        return [[0] * col_res for _ in range(col_res)]
 
     img = Image.open(path).convert("L")
     img_rescaled = img.resize((col_res[0], col_res[1]), Image.LANCZOS)
@@ -16,8 +16,8 @@ def load_obstacles_map(path, col_res):
 def generate_safe_map(margin_units, map_size, obstacles_map):
     obstacles_w, obstacles_h = len(obstacles_map[0]), len(obstacles_map)
 
-    margin_x = max(int(margin_units * (obstacles_w / map_size[0])), 1)
-    margin_y = max(int(margin_units * (obstacles_h / map_size[1])), 1)
+    margin_x = max(int(margin_units * (obstacles_w / map_size)), 1)
+    margin_y = max(int(margin_units * (obstacles_h / map_size)), 1)
 
     safe_map = [[1] * obstacles_w for _ in range(obstacles_h)]
 

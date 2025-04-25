@@ -92,12 +92,12 @@ class Renderer:
     def compute_render(self, state: dict):
         self.clear()
 
-        map_w, map_h = state["map_size"]
+        map_size = state["map_size"]
 
         head_r, seg_r, candy_r = 1.5, 1.3, 1.45
 
         cx, cy = state["candy_position"]
-        candy_px = max(1, int(2 * candy_r * self.width / map_w))
+        candy_px = max(1, int(2 * candy_r * self.width / map_size))
         base_candy_sprite = self._get_sprite(self._candy_sprite_base, candy_px)
 
         pos_key = (int(cx), int(cy))
@@ -113,13 +113,13 @@ class Renderer:
         self.offscreen.paste(
             candy_sprite,
             (
-                int(cx * self.width / map_w - cw / 2),
-                int(cy * self.height / map_h - ch / 2),
+                int(cx * self.width / map_size - cw / 2),
+                int(cy * self.height / map_size - ch / 2),
             ),
             candy_sprite,
         )
 
-        seg_px = max(1, int(2 * seg_r * self.width / map_w))
+        seg_px = max(1, int(2 * seg_r * self.width / map_size))
         base_seg_sprite = self._get_sprite(self._segment_sprite_base, seg_px)
 
         for idx, (sx, sy) in enumerate(state["segments_positions"][:state["segments_num"]]):
@@ -133,15 +133,15 @@ class Renderer:
             self.offscreen.paste(
                 seg_sprite,
                 (
-                    int(sx * self.width / map_w - sw / 2),
-                    int(sy * self.height / map_h - sh / 2),
+                    int(sx * self.width / map_size - sw / 2),
+                    int(sy * self.height / map_size - sh / 2),
                 ),
                 seg_sprite,
             )
 
         hx, hy = state["head_position"]
         head_angle = state["head_direction"] + 180
-        head_px = max(1, int(2 * head_r * self.width / map_w))
+        head_px = max(1, int(2 * head_r * self.width / map_size))
 
         head_sprite = self._get_sprite(self._head_sprite_base, head_px)
         head_sprite = head_sprite.rotate(head_angle, expand=True, resample=Image.BICUBIC)
@@ -150,8 +150,8 @@ class Renderer:
         self.offscreen.paste(
             head_sprite,
             (
-                int(hx * self.width / map_w - hw / 2),
-                int(hy * self.height / map_h - hh / 2),
+                int(hx * self.width / map_size - hw / 2),
+                int(hy * self.height / map_size - hh / 2),
             ),
             head_sprite,
         )

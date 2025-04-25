@@ -43,36 +43,36 @@ class EnvCandies :
     def met_candy(self, state):
         hpx, hpy = state["head_position"]
         cpx, cpy = state["candy_position"]
-        distance = math.sqrt((hpx - cpx) ** 2 + (hpy - cpy) ** 2)
+        distance = math.sqrt((hpx - cpx)**2 + (hpy - cpy)**2)
 
         return distance < self.candy_distance
 
     def generate_free_cells_candy(self, obstacles_map):
-        obstacles_w, obstacles_h = len(obstacles_map[0]), len(obstacles_map)
+        obstacles_size = len(obstacles_map)
 
-        candy_margin_wall_x = max(int(self.candy_wall_distance * (obstacles_w / self.map_size)), 1)
-        candy_margin_wall_y = max(int(self.candy_wall_distance * (obstacles_h / self.map_size)), 1)
+        candy_margin_wall = max(int(self.candy_wall_distance * (obstacles_size / self.map_size)), 1)
 
         safe_map_candy = generate_safe_map(self.candy_obstacle_distance, self.map_size, obstacles_map)
 
-        for x in range(obstacles_w):
-            for y in range(candy_margin_wall_y):
+        for x in range(obstacles_size):
+            for y in range(candy_margin_wall):
                 safe_map_candy[y][x] = 0
-                safe_map_candy[obstacles_h - 1 - y][x] = 0
+                safe_map_candy[obstacles_size - 1 - y][x] = 0
 
-        for y in range(obstacles_h):
-            for x in range(candy_margin_wall_x):
+        for y in range(obstacles_size):
+            for x in range(candy_margin_wall):
                 safe_map_candy[y][x] = 0
-                safe_map_candy[y][obstacles_w - 1 - x] = 0
+                safe_map_candy[y][obstacles_size - 1 - x] = 0
 
         free_cells_candy = []
-        for y in range(obstacles_h):
-            for x in range(obstacles_w):
+        for y in range(obstacles_size):
+            for x in range(obstacles_size):
                 if safe_map_candy[y][x] == 1:
                     free_cells_candy.append((x, y))
 
+        ratio = self.map_size / obstacles_size
         self.free_pos_candy = [
-            (x * (self.map_size / obstacles_w),
-             y * (self.map_size / obstacles_h))
+            (x * ratio,
+             y * ratio)
             for (x, y) in free_cells_candy
         ]

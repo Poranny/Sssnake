@@ -4,30 +4,29 @@ def load_obstacles_map(path, col_res):
         return [[0] * col_res for _ in range(col_res)]
 
     img = Image.open(path).convert("L")
-    img_rescaled = img.resize((col_res[0], col_res[1]), Image.LANCZOS)
+    img_rescaled = img.resize((col_res, col_res), Image.LANCZOS)
 
     pixels = list(img_rescaled.getdata())
     obstacles_map = [
-        [1 if p > 128 else 0 for p in pixels[row_start: row_start + col_res[0]]]
-        for row_start in range(0, col_res[0] * col_res[1], col_res[0])
+        [1 if p > 128 else 0 for p in pixels[row_start: row_start + col_res]]
+        for row_start in range(0, col_res**2, col_res)
     ]
     return obstacles_map
 
 def generate_safe_map(margin_units, map_size, obstacles_map):
-    obstacles_w, obstacles_h = len(obstacles_map[0]), len(obstacles_map)
+    obstacles_size = len(obstacles_map)
 
-    margin_x = max(int(margin_units * (obstacles_w / map_size)), 1)
-    margin_y = max(int(margin_units * (obstacles_h / map_size)), 1)
+    margin = max(int(margin_units * (obstacles_size / map_size)), 1)
 
-    safe_map = [[1] * obstacles_w for _ in range(obstacles_h)]
+    safe_map = [[1] * obstacles_size for _ in range(obstacles_size)]
 
-    for y in range(obstacles_h):
-        for x in range(obstacles_w):
+    for y in range(obstacles_size):
+        for x in range(obstacles_size):
             if obstacles_map[y][x] == 1:
-                x0 = max(0, x - margin_x)
-                x1 = min(obstacles_w, x + margin_x + 1)
-                y0 = max(0, y - margin_y)
-                y1 = min(obstacles_h, y + margin_y + 1)
+                x0 = max(0, x - margin)
+                x1 = min(obstacles_size, x + margin + 1)
+                y0 = max(0, y - margin)
+                y1 = min(obstacles_size, y + margin + 1)
 
                 for yy in range(y0, y1):
                     for xx in range(x0, x1):

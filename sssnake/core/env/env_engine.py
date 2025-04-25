@@ -40,7 +40,7 @@ class EnvEngine:
         self.calculate_obstacles_map(self.config)
 
         start_coords = self.config.get("start_pos_coords")
-        self.state["head_position"] = start_coords[0] * self.state["map_size"], start_coords[1] * self.state["map_size"]
+        self.state["head_position"] = tuple(coord * self.state["map_size"] for coord in start_coords)
 
         self.head_path = [self.state["head_position"]]
 

@@ -26,9 +26,9 @@ class EnvEngine (gym.Env):
 
         self.current_reward = 0
 
-    def reset_env(self, seed=None, config: EnvConfig = None) :
-        if config is not None:
-            self.config = config
+    def reset(self, seed=None, options: EnvConfig = None) :
+        if options is not None:
+            self.config = options
 
         self.state = {
             "head_position": (0, 0),
@@ -54,6 +54,10 @@ class EnvEngine (gym.Env):
 
         self.current_reward = 0
         self.num_steps = 0
+
+        info = []
+
+        return self.state, info
 
     def step (self, _action: int):
         action = SnakeAction(_action)
@@ -84,9 +88,7 @@ class EnvEngine (gym.Env):
 
         if self.env_collision.hit_anything(new_state) :
             self.state = new_state
-            self.hit_done()
             terminated = True
-            return
 
         if self.env_candies.met_candy(new_state) :
             if self.config.get("tail_max_segment") > self.state["segments_num"] :
@@ -104,8 +106,6 @@ class EnvEngine (gym.Env):
 
         if self.num_steps >= self.config.get("max_num_steps") and not terminated:
             truncated = True
-
-        self.notify_observers(self.state)
 
         info = []
 
@@ -170,12 +170,5 @@ class EnvEngine (gym.Env):
 
         self.env_candies.generate_free_cells_candy(obstacles_map)
 
-    def hit_done(self):
-        self.notify_observers("Hit")
-
-    def add_observer(self, observer):
-        self.observers.append(observer)
-
-    def notify_observers(self, data=None):
-        for callback in self.observers:
-            callback(data)
+    def render(self):
+        pass

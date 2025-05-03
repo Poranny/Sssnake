@@ -20,9 +20,9 @@ class GameControls:
     def get_action(self):
         pressed = self.pressed_keys
         if pressed & self.left_keys and pressed & self.right_keys:
-            return "none"
+            return 0
         if pressed & self.left_keys:
-            return "left"
+            return 1
         if pressed & self.right_keys:
-            return "right"
-        return None
+            return 2
+        return 0

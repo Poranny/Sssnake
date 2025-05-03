@@ -1,12 +1,18 @@
 import math
 from math import sin, cos, radians
 
+import gym
+from gym import spaces
+
 from sssnake.core.env.env_candies import EnvCandies
 from sssnake.core.env.env_collision import EnvCollision
 from sssnake.utils.env_config import EnvConfig
 from sssnake.core.env.env_helpers import load_obstacles_map, generate_safe_map
+from sssnake.utils.snake_action import SnakeAction
 
-class EnvEngine:
+
+class EnvEngine (gym.Env):
+
     def __init__(self, env_config: EnvConfig):
         self.config = env_config
         self.state = dict()
@@ -20,7 +26,7 @@ class EnvEngine:
 
         self.current_reward = 0
 
-    def reset_env(self, config: EnvConfig = None) :
+    def reset_env(self, seed=None, config: EnvConfig = None) :
         if config is not None:
             self.config = config
 
@@ -49,7 +55,9 @@ class EnvEngine:
         self.current_reward = 0
         self.num_steps = 0
 
-    def step (self, action):
+    def step (self, _action: int):
+        action = SnakeAction(_action)
+
         terminated, truncated = False, False
 
         new_state = self.state
@@ -59,11 +67,11 @@ class EnvEngine:
 
         head_pos_x, head_pos_y = self.state["head_position"]
 
-        if action == "left" :
+        if action is SnakeAction.LEFT :
             new_state["head_direction"] += turnspeed
-        elif action == "right" :
+        elif action is SnakeAction.RIGHT :
             new_state["head_direction"] -= turnspeed
-        elif action == "none" :
+        elif action is SnakeAction.NONE :
             pass
 
         head_dir_rad = radians(self.state["head_direction"])
@@ -86,7 +94,6 @@ class EnvEngine:
             self.current_reward += 1
             new_state["candy_position"] = self.env_candies.random_candy_pos(self.state)
 
-
         for i in range(new_state["segments_num"]):
             distance_behind_head = (i + 1) * self.segment_length
             new_state["segments_positions"][i] = self.get_position_on_path(distance_behind_head)
@@ -99,6 +106,10 @@ class EnvEngine:
             truncated = True
 
         self.notify_observers(self.state)
+
+        info = []
+
+        return self.state, self.current_reward, truncated, terminated, info
 
     def get_position_on_path(self, distance_behind_head):
         if len(self.head_path) < 2:

@@ -4,6 +4,8 @@ import tkinter as tk
 from PIL import Image, ImageTk
 
 from sssnake.core.rendering.canvas_corners_masking import add_corners
+from sssnake.utils.env_config import RenderState, RenderConfig
+
 
 class Renderer:
 
@@ -18,6 +20,7 @@ class Renderer:
         self.frame_buffer = None
         self.parent_bg_col = None
 
+        self.bg_path = ""
         self.base_bg = None
         self.obstacles_texture = None
         self._head_sprite_base = Image.open("data/textures/head.png").convert("RGBA")
@@ -48,15 +51,6 @@ class Renderer:
         )
         return add_corners(tex, rad=5, fill_color=self.parent_bg_col[1])
 
-    def set_render_config(self, render_config):
-        self.obstacles_texture = None
-        bg_path = render_config.get("map_bitmap_path")
-
-        if bg_path and self.parent:
-            self.obstacles_texture = self._load_background_texture(bg_path)
-            if self.obstacles_texture:
-                self.offscreen.paste(self.obstacles_texture, (0, 0), self.obstacles_texture)
-
     def set_parent(self, mainview):
         self.parent = mainview.get_render_frame()
         self.parent_bg_col = self.parent.cget("fg_color")
@@ -71,6 +65,8 @@ class Renderer:
 
         self.canvas.pack(expand=True, fill=tk.BOTH, padx=6, pady=6)
 
+        self.render_config = None
+
         base = Image.new("RGBA", (self.width, self.height), "black")
         self.base_bg = add_corners(base, rad=5, fill_color=self.parent_bg_col[1])
         self.offscreen.paste(self.base_bg, (0, 0))
@@ -79,6 +75,18 @@ class Renderer:
         self.canvas_id = self.canvas.create_image(0, 0, anchor="nw", image=self.frame_buffer)
 
         self.clear()
+
+    def set_render_config(self, render_config: RenderConfig):
+        self.render_config = render_config
+
+        if self.bg_path != self.render_config.map_bitmap_path :
+            self.obstacles_texture = None
+            self.bg_path = self.render_config.map_bitmap_path
+
+            if self.bg_path != "" and self.parent:
+                self.obstacles_texture = self._load_background_texture(self.bg_path)
+                if self.obstacles_texture:
+                    self.offscreen.paste(self.obstacles_texture, (0, 0), self.obstacles_texture)
 
     def clear(self):
         if self.base_bg is not None:
@@ -89,14 +97,16 @@ class Renderer:
         if self.obstacles_texture is not None:
             self.offscreen.paste(self.obstacles_texture, (0, 0), self.obstacles_texture)
 
-    def compute_render(self, state: dict):
+    def compute_render(self, render_state: RenderState):
+
+
         self.clear()
 
-        map_size = state["map_size"]
+        map_size = render_state.map_size
 
         head_r, seg_r, candy_r = 1.5, 1.3, 1.45
 
-        cx, cy = state["candy_position"]
+        cx, cy = render_state.candy_position
         candy_px = max(1, int(2 * candy_r * self.width / map_size))
         base_candy_sprite = self._get_sprite(self._candy_sprite_base, candy_px)
 
@@ -122,8 +132,8 @@ class Renderer:
         seg_px = max(1, int(2 * seg_r * self.width / map_size))
         base_seg_sprite = self._get_sprite(self._segment_sprite_base, seg_px)
 
-        for idx, (sx, sy) in enumerate(state["segments_positions"][:state["segments_num"]]):
-            tx, ty = (state["head_position"] if idx == 0 else state["segments_positions"][idx - 1])
+        for idx, (sx, sy) in enumerate(render_state.segments_positions[:render_state.segments_num]):
+            tx, ty = (render_state.head_position if idx == 0 else render_state.segments_positions[idx - 1])
             dx, dy = tx - sx, ty - sy
             angle = math.degrees(math.atan2(-dy, dx)) + 90
 
@@ -139,8 +149,8 @@ class Renderer:
                 seg_sprite,
             )
 
-        hx, hy = state["head_position"]
-        head_angle = state["head_direction"] + 180
+        hx, hy = render_state.head_position
+        head_angle = render_state.head_direction + 180
         head_px = max(1, int(2 * head_r * self.width / map_size))
 
         head_sprite = self._get_sprite(self._head_sprite_base, head_px)
@@ -161,6 +171,6 @@ class Renderer:
     def _update_canvas(self, final_img):
         self.frame_buffer.paste(final_img)
 
-    def async_render(self, state: dict):
-        final = self.compute_render(state)
+    def async_render(self, renderState: RenderState):
+        final = self.compute_render(renderState)
         self.canvas.after(0, lambda img=final: self._update_canvas(img))

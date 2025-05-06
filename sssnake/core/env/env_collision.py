@@ -1,15 +1,15 @@
 import math
 
-from sssnake.utils.env_config import EnvConfig
+from sssnake.utils.env_config import EnvSpec
 
 
 class EnvCollision :
-    def __init__(self, env_config: EnvConfig):
+    def __init__(self, env_spec: EnvSpec):
         self.obstacles_map = []
 
-        self.tail_hit_distance = env_config.get("hit_tail_distance")
-        self.wall_hit_distance = env_config.get("hit_wall_distance")
-        self.obstacle_hit_distance = env_config.get("hit_obstacle_distance")
+        self.tail_hit_distance = env_spec.hit_tail_distance
+        self.wall_hit_distance = env_spec.hit_wall_distance
+        self.obstacle_hit_distance = env_spec.hit_obstacle_distance
 
     def hit_anything(self, state):
         return (

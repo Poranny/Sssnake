@@ -6,46 +6,50 @@ from gym import spaces
 
 from sssnake.core.env.env_candies import EnvCandies
 from sssnake.core.env.env_collision import EnvCollision
-from sssnake.utils.env_config import EnvConfig
+from sssnake.utils.env_config import EnvSpec, ResetOptions
 from sssnake.core.env.env_helpers import load_obstacles_map, generate_safe_map
 from sssnake.utils.snake_action import SnakeAction
 
 
 class EnvEngine (gym.Env):
 
-    def __init__(self, env_config: EnvConfig):
-        self.config = env_config
+    def __init__(self, env_spec: EnvSpec):
+        super().__init__()
+        self.num_steps = None
+
+        n_actions = len(SnakeAction)
+
+        self.action_space = spaces.Discrete(n_actions)
+
+        self.env_spec = env_spec
         self.state = dict()
         self.observers = list()
 
         self.head_path = []
-        self.segment_length = env_config.get("tail_segment_length")
+        self.segment_length = self.env_spec.tail_segment_length
 
-        self.env_collision = EnvCollision(env_config)
-        self.env_candies = EnvCandies(env_config)
+        self.env_collision = EnvCollision(env_spec)
+        self.env_candies = EnvCandies(env_spec)
 
         self.current_reward = 0
 
-    def reset(self, seed=None, options: EnvConfig = None) :
-        if options is not None:
-            self.config = options
-
+    def reset(self, seed=None, options: ResetOptions = None) :
         self.state = {
             "head_position": (0, 0),
-            "head_direction": self.config.get("start_dir"),
+            "head_direction": options.start_dir,
             "segments_num": 0,
-            "segments_positions": [(0, 0) for _ in range(self.config.get("tail_max_segment"))],
-            "speed": self.config.get("snake_speed"),
-            "turnspeed": self.config.get("snake_turnspeed"),
-            "map_size": self.config.get("map_size"),
+            "segments_positions": [(0, 0) for _ in range(self.env_spec.tail_max_segment)],
+            "speed": options.snake_speed,
+            "turnspeed": options.snake_turnspeed,
+            "map_size": options.map_size,
             "candy_position": (10.0, 10.0),
-            "safe_map_snake": [[0 for _ in range(self.config.get("collision_map_resolution"))] for _ in range(self.config.get("collision_map_resolution"))]
+            "safe_map_snake": [[0 for _ in range(self.env_spec.collision_map_resolution)] for _ in range(self.env_spec.collision_map_resolution)]
         }
 
         self.env_candies.set_map_size(self.state["map_size"])
-        self.calculate_obstacles_map(self.config)
+        self.calculate_obstacles_map(options)
 
-        start_coords = self.config.get("start_pos_coords")
+        start_coords = options.start_pos_coords
         self.state["head_position"] = tuple(coord * self.state["map_size"] for coord in start_coords)
 
         self.head_path = [self.state["head_position"]]
@@ -59,12 +63,13 @@ class EnvEngine (gym.Env):
 
         return self.state, info
 
-    def step (self, _action: int):
+    def step (self, _action: int) -> tuple[dict, int, bool, bool, dict]:
         action = SnakeAction(_action)
 
         terminated, truncated = False, False
+        info = {}
 
-        new_state = self.state
+        new_state = self.state.copy()
 
         speed = self.state["speed"]
         turnspeed = self.state["turnspeed"]
@@ -86,12 +91,14 @@ class EnvEngine (gym.Env):
 
         self.head_path.append(new_state["head_position"])
 
+
         if self.env_collision.hit_anything(new_state) :
             self.state = new_state
-            terminated = True
+            terminated=True
+            return self.state, self.current_reward, truncated, terminated, info
 
         if self.env_candies.met_candy(new_state) :
-            if self.config.get("tail_max_segment") > self.state["segments_num"] :
+            if self.env_spec.tail_max_segment > self.state["segments_num"] :
                 self.add_segment(new_state)
             self.current_reward += 1
             new_state["candy_position"] = self.env_candies.random_candy_pos(self.state)
@@ -104,10 +111,8 @@ class EnvEngine (gym.Env):
 
         self.state = new_state
 
-        if self.num_steps >= self.config.get("max_num_steps") and not terminated:
+        if self.num_steps >= self.env_spec.max_num_steps and not terminated:
             truncated = True
-
-        info = []
 
         return self.state, self.current_reward, truncated, terminated, info
 
@@ -127,7 +132,7 @@ class EnvEngine (gym.Env):
 
                 x = x1 + (x0 - x1) * ratio
                 y = y1 + (y0 - y1) * ratio
-                return (x, y)
+                return x, y
             else:
                 accumulated += seg_len
 
@@ -161,10 +166,10 @@ class EnvEngine (gym.Env):
                                                                last_pos_y + last_dir_y * self.segment_length)
         state["segments_num"] += 1
 
-    def calculate_obstacles_map(self, env_config):
-        map_size = env_config.get("map_size")
+    def calculate_obstacles_map(self, reset_options : ResetOptions):
+        map_size = reset_options.map_size
 
-        obstacles_map = load_obstacles_map(env_config.get("map_bitmap_path"), env_config.get("collision_map_resolution"))
+        obstacles_map = load_obstacles_map(reset_options.map_bitmap_path, self.env_spec.collision_map_resolution)
 
         self.state["safe_map_snake"] = generate_safe_map(self.env_collision.obstacle_hit_distance, map_size, obstacles_map)
 

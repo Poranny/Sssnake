@@ -1,53 +1,78 @@
-from dataclasses import dataclass
-from typing import Any, Dict, List, Tuple
+from __future__ import annotations
+from dataclasses import dataclass, field, fields
+from typing import Mapping, Any, Optional, Tuple, Sequence, Iterator
 
-@dataclass(frozen=True)
-class ParamEntry:
-    name: str
-    group: str
-    type: type
-    value: Any
 
-class EnvConfig:
-    def __init__(self, raw_params: Dict[str, Dict[str, Any]]):
-        self._entries: Dict[str, ParamEntry] = {}
+@dataclass(frozen=True, slots=True)
+class EnvSpec:
+    candy_collect_distance: float
+    candy_pos_wall_distance: float
+    candy_pos_obstacle_distance: float
+    candy_head_distance: float
 
-        for group, items in [("var", raw_params.get("env_variable", {})),
-                             ("const", raw_params.get("env_constant", {}))]:
-            for key, val in items.items():
-                self._entries[key] = ParamEntry(
-                    name=key,
-                    group=group,
-                    type=type(val),
-                    value= val if not isinstance(val, list) else tuple(val)
-                )
+    hit_tail_distance: float
+    hit_wall_distance: float
+    hit_obstacle_distance:float
 
-    def get(self, name: str) -> Any:
-        return self._entries[name].value
+    tail_segment_length: float
+    tail_max_segment: int
 
-    def entry(self, name: str) -> ParamEntry:
-        return self._entries[name]
+    collision_map_resolution: int
 
-    def list_params(self) -> List[Tuple[str, str, str, Any]]:
-        return [
-            (e.name, e.group, e.type.__name__, e.value)
-            for e in self._entries.values()
-        ]
+    max_num_steps: float
+    seed: Optional[int] = None
 
-    def update(self, raw_params: Dict[str, Dict[str, Any]]) -> None:
+    @staticmethod
+    def from_dict(d: Mapping[str, Any]) -> EnvSpec:
+        return EnvSpec(**d)
 
-        for group, items in [
-            ("var", raw_params.get("env_variable", {})),
-            ("const", raw_params.get("env_constant", {}))
-        ]:
-            for key, val in items.items():
-                if key in self._entries:
-                    new_val = tuple(val) if isinstance(val, list) else val
-                    self._entries[key] = ParamEntry(
-                        name=key,
-                        group=group,
-                        type=type(val),
-                        value=new_val
-                    )
-                else:
-                    pass
+@dataclass(slots=True)
+class ResetOptions:
+    start_pos_coords: tuple[float, float]
+    
+    snake_speed: float
+    snake_turnspeed: float
+
+    map_size: float
+
+    map_bitmap_path: str = ""
+    start_dir: float = 1.0
+
+    @staticmethod
+    def from_dict(d: Mapping[str, Any]) -> ResetOptions:
+        return ResetOptions(
+            start_pos_coords=tuple(d["start_pos_coords"]),
+            **{k: v for k, v in d.items() if k != "start_pos_coords"}
+        )
+
+    def iter(self) -> Iterator[Tuple[str, type, Any]]:
+        for f in fields(self):
+            yield f.name, f.type, getattr(self, f.name)
+
+@dataclass(frozen=True, slots=True)
+class RenderConfig:
+    map_bitmap_path: str
+
+    @classmethod
+    def from_reset(cls, opts: "ResetOptions") -> RenderConfig:
+
+        return cls(
+            map_bitmap_path=opts.map_bitmap_path
+        )
+
+
+@dataclass(slots=True)
+class RenderState:
+    head_position: Tuple[float, float]
+    head_direction: float
+    segments_positions: Sequence[Tuple[float, float]]
+    segments_num: float
+    map_size: float
+    candy_position: float
+
+
+    @staticmethod
+    def from_env_state(s: Mapping[str, Any]) -> RenderState:
+        return RenderState(**{k: s[k]
+            for k in RenderState.__annotations__
+        })

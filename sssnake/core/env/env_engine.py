@@ -5,7 +5,9 @@ from copy import deepcopy
 from math import sin, cos, radians
 from typing import Tuple, Sequence
 import gymnasium as gym
+import numpy as np
 from gym import spaces
+from gym.utils import seeding
 
 from sssnake.core.env.env_candies import EnvCandies
 from sssnake.core.env.env_collision import EnvCollision
@@ -22,6 +24,8 @@ class EnvEngine (gym.Env):
         super().__init__()
         self.num_steps = None
 
+        self.np_random: np.random.Generator | None = None
+
         self.obs_keys = DEFAULT_OBS_KEYS
 
         self.action_space = spaces.Discrete(len(SnakeAction))
@@ -29,7 +33,6 @@ class EnvEngine (gym.Env):
 
         self.env_spec = env_spec
         self.state : FullState | None = None
-
 
         self.head_path = []
         self.segment_length = self.env_spec.tail_segment_length
@@ -39,7 +42,10 @@ class EnvEngine (gym.Env):
 
         self.current_reward = 0
 
+
     def reset(self, *, seed: int|None = None, options: ResetOptions | None = None) :
+        self.np_random, seed = seeding.np_random(seed)
+
         super().reset(seed=seed)
 
         self.state = FullState.initial(self.env_spec, options)
@@ -47,7 +53,7 @@ class EnvEngine (gym.Env):
         self.current_reward = 0
         self.num_steps = 0
 
-
+        self.env_candies.set_rng(self.np_random)
 
         self.env_candies.set_map_size(self.state.map_size)
         self.calculate_obstacles_map(options)

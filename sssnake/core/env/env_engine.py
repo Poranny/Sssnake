@@ -23,7 +23,11 @@ class EnvEngine (gym.Env):
 
     def __init__(self, env_spec: EnvSpec, render_mode: str | None = None):
         super().__init__()
-        assert render_mode in {None, "human", "rgb_array"}
+        if render_mode not in {None, "rgb_array"}:
+            raise ValueError(
+                f"Rendermode '{render_mode}' not supported."
+            )
+
         self.num_steps = None
         self.render_mode = render_mode
         self.np_random: np.random.Generator | None = None
@@ -189,10 +193,10 @@ class EnvEngine (gym.Env):
     def render(self):
         if self.render_mode is None:
             return None
-        if self.render_mode == "rgb_array":
-            return SnakeRenderer.rgb_array(state=self.state, out_size=20)
-        if self.render_mode == "human":
-            SnakeRenderer.human(self.state)
+        elif self.render_mode == "rgb_array":
+            return SnakeRenderer.rgb_array(self.state, out_size=400)
+        else:
+            raise NotImplementedError(f"Render mode '{self.render_mode}' is not supported.")
 
     def get_state(self) -> FullState:
         return deepcopy(self.state)

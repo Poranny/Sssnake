@@ -1,10 +1,14 @@
 # env_helpers.py
 from __future__ import annotations
+
+import json
 from pathlib import Path
 from typing import Union
 
 import numpy as np
 from PIL import Image
+
+from sssnake.utils.env_config import EnvSpec, ResetOptions
 
 
 def load_obstacles_map(path: Union[str, Path], col_res: int) -> np.ndarray:
@@ -48,3 +52,12 @@ def generate_safe_map(
 
     safe_map = 1 - dilated
     return safe_map.astype(np.int8)
+
+
+
+def load_config(jsonpath: str):
+    with open(jsonpath, "r", encoding="utf-8") as f:
+        raw = json.load(f)
+    spec = EnvSpec.from_dict(raw["env_spec"])
+    opts = ResetOptions.from_dict(raw["reset_options"])
+    return spec, opts

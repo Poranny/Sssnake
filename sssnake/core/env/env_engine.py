@@ -11,6 +11,7 @@ from gym.utils import seeding
 
 from sssnake.core.env.env_candies import EnvCandies
 from sssnake.core.env.env_collision import EnvCollision
+from sssnake.core.env.env_renderer import SnakeRenderer
 from sssnake.core.env.env_schema import DEFAULT_OBS_KEYS, build_observation_space
 from sssnake.core.env.env_types import FullState, InfoDict, ObservationDict
 from sssnake.utils.env_config import EnvSpec, ResetOptions
@@ -20,10 +21,11 @@ from sssnake.utils.snake_action import SnakeAction
 
 class EnvEngine (gym.Env):
 
-    def __init__(self, env_spec: EnvSpec):
+    def __init__(self, env_spec: EnvSpec, render_mode: str | None = None):
         super().__init__()
+        assert render_mode in {None, "human", "rgb_array"}
         self.num_steps = None
-
+        self.render_mode = render_mode
         self.np_random: np.random.Generator | None = None
 
         self.obs_keys = DEFAULT_OBS_KEYS
@@ -48,7 +50,6 @@ class EnvEngine (gym.Env):
 
         self.state = FullState.initial(self.env_spec, options)
 
-        self.current_reward = 0
         self.num_steps = 0
 
         self.env_candies.set_rng(self.np_random)
@@ -186,8 +187,12 @@ class EnvEngine (gym.Env):
         self.env_candies.generate_free_cells_candy(obstacles_map)
 
     def render(self):
-        pass
+        if self.render_mode is None:
+            return None
+        if self.render_mode == "rgb_array":
+            return SnakeRenderer.rgb_array(state=self.state, out_size=20)
+        if self.render_mode == "human":
+            SnakeRenderer.human(self.state)
 
     def get_state(self) -> FullState:
-
         return deepcopy(self.state)

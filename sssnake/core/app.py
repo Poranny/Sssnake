@@ -12,7 +12,7 @@ from sssnake.ui.views import MainView
 from sssnake.core.lifecycle_manager import AppLifecycleManager
 
 class App:
-    def __init__(self):
+    def __init__(self, headless=False):
         self.lifecycle_manager = AppLifecycleManager()
 
         self.app = CTk()
@@ -25,12 +25,13 @@ class App:
 
         self.env_spec, self.reset_options = self.load_config(jsonpath="sssnake/utils/default_params.json")
 
-        self.main_menu = MainView(self.app, self.reset_options)
-        self.main_menu.add_observer(self.on_mainview)
+        if not headless:
+            self.main_menu = MainView(self.app, self.reset_options)
+            self.main_menu.add_observer(self.on_mainview)
 
-        self.renderer = Renderer(width=600, height=600)
-        self.renderer.set_parent(self.main_menu)
-        self.renderer.set_render_config(RenderConfig.from_reset(self.reset_options))
+            self.renderer = Renderer(width=600, height=600)
+            self.renderer.set_parent(self.main_menu)
+            self.renderer.set_render_config(RenderConfig.from_reset(self.reset_options))
 
         self.env = EnvEngine(self.env_spec)
 
@@ -74,10 +75,3 @@ class App:
 
     def run(self):
         self.app.mainloop()
-
-    def load_config(self, jsonpath: str):
-        with open(jsonpath, "r", encoding="utf-8") as f:
-            raw = json.load(f)
-        spec = EnvSpec.from_dict(raw["env_spec"])
-        opts = ResetOptions.from_dict(raw["reset_options"])
-        return spec, opts

@@ -19,40 +19,40 @@ class EnvCollision :
         )
 
     def hit_obstacle(self, state):
-        if not state["safe_map_snake"]:
+        if not state.safe_map_snake:
             return False
 
-        hx, hy = state["head_position"]
-        w, h = len(state["safe_map_snake"][0]), len(state["safe_map_snake"])
+        hx, hy = state.head_position
+        w, h = len(state.safe_map_snake[0]), len(state.safe_map_snake)
 
-        px = int(hx / state["map_size"] * w)
-        py = int(hy / state["map_size"] * h)
+        px = int(hx / state.map_size * w)
+        py = int(hy / state.map_size * h)
 
         px = max(0, min(w - 1, px))
         py = max(0, min(h - 1, py))
 
-        return state["safe_map_snake"][py][px] == 0
+        return state.safe_map_snake[py][px] == 0
 
     def hit_wall (self, state):
-        hpx, hpy = state["head_position"]
+        hpx, hpy = state.head_position
 
         hit = any(
             abs(coord - border) < self.wall_hit_distance
             for coord, border in [
                 (hpx, 0),
                 (hpy, 0),
-                (hpx, state["map_size"]),
-                (hpy, state["map_size"]),
+                (hpx, state.map_size),
+                (hpy, state.map_size),
             ]
         )
 
         return hit
 
     def hit_tail(self, state):
-        hpx, hpy = state["head_position"]
+        hpx, hpy = state.head_position
         hit = False
 
-        for segment_pos in state["segments_positions"]:
+        for segment_pos in state.segments_positions:
             cpx, cpy = segment_pos
             distance = math.sqrt((hpx - cpx) ** 2 + (hpy - cpy) ** 2)
 

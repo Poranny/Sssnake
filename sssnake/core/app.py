@@ -1,6 +1,4 @@
 import json
-from pathlib import Path
-
 from customtkinter import *
 
 from sssnake.utils.env_config import EnvSpec, ResetOptions, RenderState, RenderConfig
@@ -51,7 +49,6 @@ class App:
 
         elif isinstance(data, ResetOptions) :
             self.reset_options = data
-            print(self.reset_options)
 
         else :
             print("Mainview command unknown")

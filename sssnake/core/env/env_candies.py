@@ -20,7 +20,7 @@ class EnvCandies :
         self.map_size = map_size
 
     def random_candy_pos(self, state):
-        head = state["head_position"]
+        head = state.head_position
 
         available = [
             pos for pos in self.free_pos_candy.copy()
@@ -41,8 +41,8 @@ class EnvCandies :
         return rand_x, rand_y
 
     def met_candy(self, state):
-        hpx, hpy = state["head_position"]
-        cpx, cpy = state["candy_position"]
+        hpx, hpy = state.head_position
+        cpx, cpy = state.candy_position
         distance = math.sqrt((hpx - cpx)**2 + (hpy - cpy)**2)
 
         return distance < self.candy_distance

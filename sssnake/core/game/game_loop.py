@@ -32,10 +32,10 @@ class GameLoop:
 
     def game_loop(self):
         current_action = self.controls.get_action()
-        state, reward, terminated, truncated, info = self.env.step(current_action)
-
+        obs, reward, terminated, truncated, info = self.env.step(current_action)
+        state = self.env.get_state()
         if not (terminated or truncated) :
-            threading.Thread(target=self.renderer.async_render, args=(RenderState.from_env_state(state),), daemon=True).start()
+            threading.Thread(target=self.renderer.async_render, args=(RenderState.from_full_state(state),), daemon=True).start()
             self.loop_id = self.app.after(self.frame_ms, self.game_loop)
         else :
             self.master.stop_game()

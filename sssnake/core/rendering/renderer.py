@@ -98,8 +98,6 @@ class Renderer:
             self.offscreen.paste(self.obstacles_texture, (0, 0), self.obstacles_texture)
 
     def compute_render(self, render_state: RenderState):
-
-
         self.clear()
 
         map_size = render_state.map_size
@@ -111,6 +109,7 @@ class Renderer:
         base_candy_sprite = self._get_sprite(self._candy_sprite_base, candy_px)
 
         pos_key = (int(cx), int(cy))
+
         if pos_key not in self._candy_angles:
             self._candy_angles[pos_key] = random.uniform(140, 220)
         candy_angle = self._candy_angles[pos_key]

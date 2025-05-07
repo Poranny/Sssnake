@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 from dataclasses import dataclass, field, fields
 from typing import Mapping, Any, Optional, Tuple, Sequence, Iterator
+
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,6 +20,15 @@ class EnvSpec:
     tail_max_segment: int
 
     collision_map_resolution: int
+
+    max_map_size : float
+    min_map_size: float
+
+    max_speed : float
+    min_speed: float
+
+    max_turnspeed: float
+    min_turnspeed: float
 
     max_num_steps: float
     seed: Optional[int] = None
@@ -41,8 +52,7 @@ class ResetOptions:
     @staticmethod
     def from_dict(d: Mapping[str, Any]) -> ResetOptions:
         return ResetOptions(
-            start_pos_coords=tuple(d["start_pos_coords"]),
-            **{k: v for k, v in d.items() if k != "start_pos_coords"}
+            **{k: v for k, v in d.items()}
         )
 
     def iter(self) -> Iterator[Tuple[str, type, Any]]:
@@ -54,7 +64,7 @@ class RenderConfig:
     map_bitmap_path: str
 
     @classmethod
-    def from_reset(cls, opts: "ResetOptions") -> RenderConfig:
+    def from_reset(cls, opts: ResetOptions) -> RenderConfig:
 
         return cls(
             map_bitmap_path=opts.map_bitmap_path
@@ -68,11 +78,15 @@ class RenderState:
     segments_positions: Sequence[Tuple[float, float]]
     segments_num: float
     map_size: float
-    candy_position: float
+    candy_position: Tuple[float, float]
 
-
-    @staticmethod
-    def from_env_state(s: Mapping[str, Any]) -> RenderState:
-        return RenderState(**{k: s[k]
-            for k in RenderState.__annotations__
-        })
+    @classmethod
+    def from_full_state(cls, s: "FullState") -> RenderState:
+        return cls(
+            head_position=s.head_position,
+            head_direction=s.head_direction,
+            segments_positions=s.segments_positions.copy(),
+            candy_position=s.candy_position,
+            segments_num=s.segments_num,
+            map_size=s.map_size,
+        )

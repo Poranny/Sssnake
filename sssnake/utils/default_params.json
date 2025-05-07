@@ -26,6 +26,13 @@
 
     "collision_map_resolution" : 40,
 
-    "max_num_steps" : 10000
+    "max_num_steps" : 10000,
+
+    "min_map_size" : 15,
+    "max_map_size" : 100,
+    "min_turnspeed" : 2,
+    "max_turnspeed" : 10,
+    "min_speed" : 0.1,
+    "max_speed" : 1
   }
 }

@@ -16,7 +16,7 @@ class EnvCandies :
 
         self.map_size = 0
 
-        self.free_pos_candy = None
+        self.free_pos_candy: np.ndarray | None = None
 
     def set_rng(self, rng: np.random.Generator):
         self.rng = rng
@@ -25,18 +25,16 @@ class EnvCandies :
         self.map_size = map_size
 
     def random_candy_pos(self, state):
-        assert self.rng is not None, "RNG not set – call set_rng() from EnvEngine.reset()"
+        assert self.rng is not None
 
         head = state.head_position
+        dists = np.linalg.norm(self.free_pos_candy - head, axis=1)
 
-        available = [
-            pos for pos in self.free_pos_candy
-            if np.linalg.norm(np.subtract(pos, head)) >= self.candy_head_distance
-        ]
+        available = self.free_pos_candy[dists >= self.candy_head_distance]
 
-        if available:
-            idx = self.rng.integers(len(available))
-            return available[idx]
+        if available.size:
+            idx = self.rng.integers(available.shape[0])
+            return tuple(available[idx])
 
         return self.random_candy_pos_nomap()
 
@@ -53,36 +51,27 @@ class EnvCandies :
     def met_candy(self, state):
         hpx, hpy = state.head_position
         cpx, cpy = state.candy_position
-        distance = math.sqrt((hpx - cpx)**2 + (hpy - cpy)**2)
-
-        return distance < self.candy_distance
+        return math.hypot(hpx - cpx, hpy - cpy) < self.candy_distance
 
     def generate_free_cells_candy(self, obstacles_map):
-        obstacles_size = len(obstacles_map)
+        n = obstacles_map.shape[0]
 
-        candy_margin_wall = max(int(self.candy_wall_distance * (obstacles_size / self.map_size)), 1)
+        candy_margin_wall = max(int(self.candy_wall_distance * (n / self.map_size)), 1)
 
-        safe_map_candy = generate_safe_map(self.candy_obstacle_distance, self.map_size, obstacles_map)
+        safe_map_candy = generate_safe_map(
+            self.candy_obstacle_distance,
+            self.map_size,
+            obstacles_map,
+        )
 
-        for x in range(obstacles_size):
-            for y in range(candy_margin_wall):
-                safe_map_candy[y][x] = 0
-                safe_map_candy[obstacles_size - 1 - y][x] = 0
+        safe_map_candy[:candy_margin_wall, :] = 0
+        safe_map_candy[-candy_margin_wall:, :] = 0
+        safe_map_candy[:, :candy_margin_wall] = 0
+        safe_map_candy[:, -candy_margin_wall:] = 0
 
-        for y in range(obstacles_size):
-            for x in range(candy_margin_wall):
-                safe_map_candy[y][x] = 0
-                safe_map_candy[y][obstacles_size - 1 - x] = 0
+        ys, xs = np.nonzero(safe_map_candy)
 
-        free_cells_candy = []
-        for y in range(obstacles_size):
-            for x in range(obstacles_size):
-                if safe_map_candy[y][x] == 1:
-                    free_cells_candy.append((x, y))
+        coords = np.stack((xs, ys), axis=1).astype(np.float32)
+        ratio = self.map_size / n
 
-        ratio = self.map_size / obstacles_size
-        self.free_pos_candy = [
-            (x * ratio,
-             y * ratio)
-            for (x, y) in free_cells_candy
-        ]
+        self.free_pos_candy = coords * ratio

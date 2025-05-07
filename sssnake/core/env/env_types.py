@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass, asdict
 from typing import Tuple, List, Dict, Any, Sequence
 
-from gymnasium import spaces
+import numpy as np
 
 from sssnake.utils.env_config import ResetOptions, EnvSpec
 
@@ -17,10 +17,10 @@ class FullState:
     turnspeed: float
     map_size: float
     candy_position: Tuple[float, float]
-    safe_map_snake: List[List[int]]
+    safe_map_snake: np.ndarray
 
     @staticmethod
-    def initial(spec: EnvSpec, opts: ResetOptions) -> FullState:
+    def initial(spec: EnvSpec, opts: ResetOptions) -> "FullState":
         return FullState(
             head_position=(0.0, 0.0),
             head_direction=opts.start_dir,
@@ -30,13 +30,13 @@ class FullState:
             turnspeed=opts.snake_turnspeed,
             map_size=opts.map_size,
             candy_position=(10.0, 10.0),
-            safe_map_snake=[
-                [0] * spec.collision_map_resolution
-                for _ in range(spec.collision_map_resolution)
-            ],
+            safe_map_snake=np.ones(
+                (spec.collision_map_resolution, spec.collision_map_resolution),
+                dtype=np.int8,
+            ),
         )
 
-    def to_obs(self, keys: Sequence[str] | None = None) -> ObservationDict:
+    def to_obs(self, keys: Sequence[str] | None = None) -> "ObservationDict":
         raw: Dict[str, Any] = asdict(self)
         if keys is None:
             return raw

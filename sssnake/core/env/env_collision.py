@@ -19,11 +19,11 @@ class EnvCollision :
         )
 
     def hit_obstacle(self, state):
-        if not state.safe_map_snake:
+        if state.safe_map_snake is None or state.safe_map_snake.size == 0:
             return False
 
         hx, hy = state.head_position
-        w, h = len(state.safe_map_snake[0]), len(state.safe_map_snake)
+        h, w = state.safe_map_snake.shape
 
         px = int(hx / state.map_size * w)
         py = int(hy / state.map_size * h)

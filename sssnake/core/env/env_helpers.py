@@ -1,34 +1,50 @@
+# env_helpers.py
+from __future__ import annotations
+from pathlib import Path
+from typing import Union
+
+import numpy as np
 from PIL import Image
-def load_obstacles_map(path, col_res):
-    if path == "":
-        return [[0] * col_res for _ in range(col_res)]
 
-    img = Image.open(path).convert("L")
-    img_rescaled = img.resize((col_res, col_res), Image.LANCZOS)
 
-    pixels = list(img_rescaled.getdata())
-    obstacles_map = [
-        [1 if p > 128 else 0 for p in pixels[row_start: row_start + col_res]]
-        for row_start in range(0, col_res**2, col_res)
-    ]
-    return obstacles_map
+def load_obstacles_map(path: Union[str, Path], col_res: int) -> np.ndarray:
+    if not path or str(path) == "":
+        return np.zeros((col_res, col_res), dtype=np.int8)
 
-def generate_safe_map(margin_units, map_size, obstacles_map):
-    obstacles_size = len(obstacles_map)
+    img = Image.open(path).convert("L").resize((col_res, col_res), Image.LANCZOS)
 
-    margin = max(int(margin_units * (obstacles_size / map_size)), 1)
+    arr = np.asarray(img, dtype=np.uint8)
+    obstacles = (arr > 128).astype(np.int8)
 
-    safe_map = [[1] * obstacles_size for _ in range(obstacles_size)]
+    return obstacles
 
-    for y in range(obstacles_size):
-        for x in range(obstacles_size):
-            if obstacles_map[y][x] == 1:
-                x0 = max(0, x - margin)
-                x1 = min(obstacles_size, x + margin + 1)
-                y0 = max(0, y - margin)
-                y1 = min(obstacles_size, y + margin + 1)
 
-                for yy in range(y0, y1):
-                    for xx in range(x0, x1):
-                        safe_map[yy][xx] = 0
-    return safe_map
+def generate_safe_map(
+    margin_units: float,
+    map_size: float,
+    obstacles_map: np.ndarray,
+) -> np.ndarray:
+
+    obst = np.asarray(obstacles_map, dtype=np.int8)
+    n = obst.shape[0]
+    margin = max(int(margin_units * (n / map_size)), 1)
+
+    if obst.max() == 0:
+        return np.ones_like(obst, dtype=np.int8)
+
+    dilated = np.zeros_like(obst, dtype=np.int8)
+
+    for dy in range(-margin, margin + 1):
+        y_src = slice(max(0, -dy), min(n, n - dy))
+        y_dst = slice(max(0,  dy), min(n, n + dy))
+        for dx in range(-margin, margin + 1):
+            x_src = slice(max(0, -dx), min(n, n - dx))
+            x_dst = slice(max(0,  dx), min(n, n + dx))
+
+            dilated[y_dst, x_dst] = np.maximum(
+                dilated[y_dst, x_dst],
+                obst[y_src, x_src]
+            )
+
+    safe_map = 1 - dilated
+    return safe_map.astype(np.int8)

@@ -40,8 +40,6 @@ class EnvEngine (gym.Env):
         self.env_collision = EnvCollision(env_spec)
         self.env_candies = EnvCandies(env_spec)
 
-        self.current_reward = 0
-
 
     def reset(self, *, seed: int|None = None, options: ResetOptions | None = None) :
         self.np_random, seed = seeding.np_random(seed)
@@ -74,6 +72,8 @@ class EnvEngine (gym.Env):
     def step (self, action_int: int) :
         assert self.state is not None, "Environment not reset!"
 
+        current_reward = 0
+
         action = SnakeAction(action_int)
 
         terminated = truncated = False
@@ -105,12 +105,12 @@ class EnvEngine (gym.Env):
         if self.env_collision.hit_anything(self.state) :
             terminated=True
             obs : ObservationDict = self.state.to_obs(self.obs_keys)
-            return obs, self.current_reward, terminated, truncated, info
+            return obs, current_reward, terminated, truncated, info
 
         if self.env_candies.met_candy(self.state) :
             if self.env_spec.tail_max_segment > self.state.segments_num :
                 self.add_segment()
-            self.current_reward += 1
+            current_reward += 1
             self.state.candy_position = self.env_candies.random_candy_pos(self.state)
 
         for i in range(self.state.segments_num):
@@ -124,7 +124,7 @@ class EnvEngine (gym.Env):
             truncated = True
 
         obs : ObservationDict = self.state.to_obs(self.obs_keys)
-        return obs, self.current_reward, terminated, truncated, info
+        return obs, current_reward, terminated, truncated, info
 
     def get_position_on_path(self, distance_behind_head):
         if len(self.head_path) < 2:

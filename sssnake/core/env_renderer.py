@@ -12,7 +12,7 @@ _CANDY_BASE   = Image.open("data/textures/candy.png").convert("RGBA")
 _sprite_cache = {}
 _candy_angles = {}
 
-def aaa(base: Image.Image, size: int) -> Image.Image:
+def get_sprite(base: Image.Image, size: int) -> Image.Image:
     key = (id(base), size)
     if key not in _sprite_cache:
         sz = max(1, size)
@@ -42,7 +42,7 @@ def state_to_array(
     cx, cy = render_state.candy_position
     candy_r = 1.45
     candy_px = max(1, int(2 * candy_r * out_size / map_size))
-    candy_sprite = _get_sprite(_CANDY_BASE, candy_px)
+    candy_sprite = get_sprite(_CANDY_BASE, candy_px)
     key = (int(cx), int(cy))
     if key not in _candy_angles:
         _candy_angles[key] = random.uniform(140, 220)
@@ -57,7 +57,7 @@ def state_to_array(
     # 2) Segments
     seg_r = 1.3
     seg_px = max(1, int(2 * seg_r * out_size / map_size))
-    seg_base = _get_sprite(_SEGMENT_BASE, seg_px)
+    seg_base = get_sprite(_SEGMENT_BASE, seg_px)
 
     for idx, (sx, sy) in enumerate(render_state.segments_positions[:render_state.segments_num]):
         tx, ty = (
@@ -79,7 +79,7 @@ def state_to_array(
     # 3) Head
     head_r = 1.5
     head_px = max(1, int(2 * head_r * out_size / map_size))
-    head_sprite = _get_sprite(_HEAD_BASE, head_px)
+    head_sprite = get_sprite(_HEAD_BASE, head_px)
     head_angle = render_state.head_direction + 180
     head_sprite = head_sprite.rotate(head_angle, expand=True, resample=Image.BICUBIC)
     hw, hh = head_sprite.size

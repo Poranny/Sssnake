@@ -19,9 +19,10 @@ from sssnake.utils.snake_action import SnakeAction
 
 
 class EnvEngine (gym.Env):
-
     def __init__(self, env_spec: EnvSpec, render_mode: str | None = None):
         super().__init__()
+        self.last_reset_options = None
+
         if render_mode not in {None, "rgb_array"}:
             raise ValueError(
                 f"Rendermode '{render_mode}' not supported."
@@ -57,18 +58,11 @@ class EnvEngine (gym.Env):
 
         self.num_steps = 0
 
-        self.env_candies.set_rng(self.np_random)
+        self.place_head(options)
 
         self.env_candies.set_map_size(self.state.map_size)
         self.calculate_obstacles_map(options)
-
-        start_coords = options.start_pos_coords
-        self.state.head_position = tuple(coord * self.state.map_size for coord in start_coords)
-
-        self.head_path = [self.state.head_position]
-
-        self.state.candy_position = self.env_candies.random_candy_pos(self.state)
-
+        self.init_candies()
 
         info : InfoDict = {}
         obs : ObservationDict = self.state.to_obs(self.obs_keys)
@@ -79,34 +73,16 @@ class EnvEngine (gym.Env):
         assert self.state is not None, "Environment not reset!"
 
         current_reward = 0
+        terminated = truncated = False
+        info : InfoDict = {}
 
         action = SnakeAction(action_int)
 
-        terminated = truncated = False
+        self.apply_turn(action)
 
+        self.move_head()
 
-        speed = self.state.speed
-        turnspeed = self.state.turnspeed
-
-        head_pos_x, head_pos_y = self.state.head_position
-
-        if action is SnakeAction.LEFT :
-            self.state.head_direction += turnspeed
-        elif action is SnakeAction.RIGHT :
-            self.state.head_direction -= turnspeed
-        elif action is SnakeAction.NONE :
-            pass
-
-        head_dir_rad = radians(self.state.head_direction)
-        head_dir_x, head_dir_y = sin(head_dir_rad), cos(head_dir_rad)
-
-        self.state.head_position = (head_pos_x + head_dir_x * speed, head_pos_y + head_dir_y * speed)
-        self.state.head_direction %= 360.0
-
-        self.head_path.append(self.state.head_position)
-
-
-        info : InfoDict = {}
+        self.update_body_segments()
 
         if self.env_collision.hit_anything(self.state) :
             terminated=True
@@ -116,20 +92,15 @@ class EnvEngine (gym.Env):
         if self.env_candies.met_candy(self.state) :
             if self.env_spec.tail_max_segment > self.state.segments_num :
                 self.add_segment()
-            current_reward += 1
+            current_reward = 1
             self.state.candy_position = self.env_candies.random_candy_pos(self.state)
-
-        for i in range(self.state.segments_num):
-            distance_behind_head = (i + 1) * self.segment_length
-            self.state.segments_positions[i] = self.get_position_on_path(distance_behind_head)
 
         self.num_steps += 1
 
-
-        if self.num_steps >= self.env_spec.max_num_steps and not terminated:
-            truncated = True
+        truncated = self.num_steps >= self.env_spec.max_num_steps
 
         obs : ObservationDict = self.state.to_obs(self.obs_keys)
+
         return obs, current_reward, terminated, truncated, info
 
     def get_position_on_path(self, distance_behind_head):
@@ -184,7 +155,6 @@ class EnvEngine (gym.Env):
 
     def calculate_obstacles_map(self, reset_options : ResetOptions):
         map_size = reset_options.map_size
-
         obstacles_map = load_obstacles_map(reset_options.map_bitmap_path, self.env_spec.collision_map_resolution)
 
         self.state.safe_map_snake = generate_safe_map(self.env_collision.obstacle_hit_distance, map_size, obstacles_map)
@@ -201,3 +171,36 @@ class EnvEngine (gym.Env):
 
     def get_state(self) -> FullState:
         return deepcopy(self.state)
+
+    def init_candies(self):
+        self.env_candies.set_rng(self.np_random)
+
+        self.state.candy_position = self.env_candies.random_candy_pos(self.state)
+
+    def place_head(self, options):
+        start_coords = options.start_pos_coords
+        self.state.head_position = tuple(coord * self.state.map_size for coord in start_coords)
+
+        self.head_path = [self.state.head_position]
+
+    def apply_turn(self, action):
+        if action is SnakeAction.LEFT :
+            self.state.head_direction += self.state.turnspeed
+        elif action is SnakeAction.RIGHT :
+            self.state.head_direction -= self.state.turnspeed
+        elif action is SnakeAction.NONE :
+            pass
+
+        self.state.head_direction %= 360.0
+
+    def move_head(self):
+        ang = radians(self.state.head_direction)
+        dx, dy = sin(ang) * self.state.speed, cos(ang) * self.state.speed
+        x, y = self.state.head_position
+        self.state.head_position = (x + dx, y + dy)
+        self.head_path.append(self.state.head_position)
+
+    def update_body_segments(self):
+        for i in range(self.state.segments_num):
+            distance_behind_head = (i + 1) * self.segment_length
+            self.state.segments_positions[i] = self.get_position_on_path(distance_behind_head)

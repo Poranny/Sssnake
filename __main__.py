@@ -1,4 +1,4 @@
-from sssnake.core.app import App
+from sssnake.game.app import App
 
 def main():
     app = App()

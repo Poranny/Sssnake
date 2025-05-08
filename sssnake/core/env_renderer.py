@@ -1,0 +1,93 @@
+import math
+import random
+import numpy as np
+from PIL import Image
+from sssnake.game.ui.canvas_corners_masking import add_corners
+from sssnake.utils.env_config import RenderState
+
+_HEAD_BASE    = Image.open("data/textures/head.png").convert("RGBA")
+_SEGMENT_BASE = Image.open("data/textures/segment.png").convert("RGBA")
+_CANDY_BASE   = Image.open("data/textures/candy.png").convert("RGBA")
+
+_sprite_cache = {}
+_candy_angles = {}
+
+def aaa(base: Image.Image, size: int) -> Image.Image:
+    key = (id(base), size)
+    if key not in _sprite_cache:
+        sz = max(1, size)
+        _sprite_cache[key] = base.resize((sz, sz), Image.LANCZOS)
+    return _sprite_cache[key]
+
+def state_to_array(
+    render_state: RenderState,
+    collision_bitmap_path: str = "",
+    out_size: int = 400
+) -> np.ndarray:
+      # 0) Bg
+    if collision_bitmap_path:
+        bg = (
+            Image.open(collision_bitmap_path)
+                 .convert("L")
+                 .resize((out_size, out_size), Image.LANCZOS)
+                 .convert("RGBA")
+        )
+        off = add_corners(bg, rad=5, fill_color=(0,0,0,0))
+    else:
+        off = Image.new("RGBA", (out_size, out_size), "black")
+
+    map_size = render_state.map_size
+
+    # 1) Candy
+    cx, cy = render_state.candy_position
+    candy_r = 1.45
+    candy_px = max(1, int(2 * candy_r * out_size / map_size))
+    candy_sprite = _get_sprite(_CANDY_BASE, candy_px)
+    key = (int(cx), int(cy))
+    if key not in _candy_angles:
+        _candy_angles[key] = random.uniform(140, 220)
+    candy_sprite = candy_sprite.rotate(_candy_angles[key], expand=True, resample=Image.BICUBIC)
+    cw, ch = candy_sprite.size
+    off.paste(
+        candy_sprite,
+        (int(cx * out_size / map_size - cw/2), int(cy * out_size / map_size - ch/2)),
+        candy_sprite
+    )
+
+    # 2) Segments
+    seg_r = 1.3
+    seg_px = max(1, int(2 * seg_r * out_size / map_size))
+    seg_base = _get_sprite(_SEGMENT_BASE, seg_px)
+
+    for idx, (sx, sy) in enumerate(render_state.segments_positions[:render_state.segments_num]):
+        tx, ty = (
+            render_state.head_position
+            if idx == 0
+            else render_state.segments_positions[idx-1]
+        )
+        dx, dy = tx - sx, ty - sy
+        angle = math.degrees(math.atan2(-dy, dx)) + 90
+
+        seg_sprite = seg_base.rotate(angle, expand=True, resample=Image.BICUBIC)
+        sw, sh = seg_sprite.size
+        off.paste(
+            seg_sprite,
+            (int(sx * out_size / map_size - sw/2), int(sy * out_size / map_size - sh/2)),
+            seg_sprite
+        )
+
+    # 3) Head
+    head_r = 1.5
+    head_px = max(1, int(2 * head_r * out_size / map_size))
+    head_sprite = _get_sprite(_HEAD_BASE, head_px)
+    head_angle = render_state.head_direction + 180
+    head_sprite = head_sprite.rotate(head_angle, expand=True, resample=Image.BICUBIC)
+    hw, hh = head_sprite.size
+    hx, hy = render_state.head_position
+    off.paste(
+        head_sprite,
+        (int(hx * out_size / map_size - hw/2), int(hy * out_size / map_size - hh/2)),
+        head_sprite
+    )
+
+    return np.array(off, dtype=np.uint8)

@@ -8,7 +8,7 @@
 
     "map_size": 30,
 
-    "map_bitmap_path": ""
+    "map_bitmap_path": "data/map_22.png"
   },
 
   "env_spec": {

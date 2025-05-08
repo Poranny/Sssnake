@@ -1,9 +1,8 @@
 import math
-import random
 
 import numpy as np
 
-from sssnake.core.env.env_helpers import generate_safe_map
+from sssnake.core.env_helpers import generate_safe_map
 from sssnake.utils.env_config import EnvSpec
 
 

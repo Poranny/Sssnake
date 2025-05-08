@@ -3,19 +3,18 @@ from __future__ import annotations
 import math
 from copy import deepcopy
 from math import sin, cos, radians
-from typing import Tuple, Sequence
 import gymnasium as gym
 import numpy as np
 from gym import spaces
 from gym.utils import seeding
 
-from sssnake.core.env.env_candies import EnvCandies
-from sssnake.core.env.env_collision import EnvCollision
-from sssnake.core.env.env_renderer import SnakeRenderer
-from sssnake.core.env.env_schema import DEFAULT_OBS_KEYS, build_observation_space
-from sssnake.core.env.env_types import FullState, InfoDict, ObservationDict
-from sssnake.utils.env_config import EnvSpec, ResetOptions
-from sssnake.core.env.env_helpers import load_obstacles_map, generate_safe_map
+from sssnake.core.env_candies import EnvCandies
+from sssnake.core.env_collision import EnvCollision
+from sssnake.core.env_renderer import state_to_array
+from sssnake.core.env_schema import DEFAULT_OBS_KEYS, build_observation_space
+from sssnake.core.env_types import FullState, InfoDict, ObservationDict
+from sssnake.utils.env_config import EnvSpec, ResetOptions, RenderState
+from sssnake.core.env_helpers import load_obstacles_map, generate_safe_map
 from sssnake.utils.snake_action import SnakeAction
 
 
@@ -49,6 +48,8 @@ class EnvEngine (gym.Env):
 
     def reset(self, *, seed: int|None = None, options: ResetOptions | None = None) :
         self.np_random, seed = seeding.np_random(seed)
+
+        self.last_reset_options = options
 
         super().reset(seed=seed)
 
@@ -194,7 +195,7 @@ class EnvEngine (gym.Env):
         if self.render_mode is None:
             return None
         elif self.render_mode == "rgb_array":
-            return SnakeRenderer.rgb_array(self.state, out_size=400)
+            return state_to_array(RenderState.from_full_state(self.state), self.last_reset_options.map_bitmap_path)
         else:
             raise NotImplementedError(f"Render mode '{self.render_mode}' is not supported.")
 

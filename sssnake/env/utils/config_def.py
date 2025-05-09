@@ -39,14 +39,13 @@ class EnvSpec:
 @dataclass(slots=True)
 class ResetOptions:
     start_pos_coords: tuple[float, float]
+    start_dir: float
     
     snake_speed: float
     snake_turnspeed: float
 
     map_size: float
-
     map_bitmap_path: str = ""
-    start_dir: float = 1.0
 
     @staticmethod
     def from_dict(d: Mapping[str, Any]) -> ResetOptions:

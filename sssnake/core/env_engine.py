@@ -82,7 +82,6 @@ class EnvEngine (gym.Env):
 
         self.move_head()
 
-        self.update_body_segments()
 
         if self.env_collision.hit_anything(self.state) :
             terminated=True
@@ -95,6 +94,7 @@ class EnvEngine (gym.Env):
             current_reward = 1
             self.state.candy_position = self.env_candies.random_candy_pos(self.state)
 
+        self.update_body_segments()
         self.num_steps += 1
 
         truncated = self.num_steps >= self.env_spec.max_num_steps

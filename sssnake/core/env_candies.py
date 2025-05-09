@@ -3,7 +3,7 @@ import math
 import numpy as np
 
 from sssnake.core.env_helpers import generate_safe_map
-from sssnake.utils.env_config import EnvSpec
+from sssnake.core.env_config import EnvSpec
 
 
 class EnvCandies :

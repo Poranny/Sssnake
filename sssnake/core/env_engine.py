@@ -13,9 +13,9 @@ from sssnake.core.env_collision import EnvCollision
 from sssnake.core.env_renderer import state_to_array
 from sssnake.core.env_schema import DEFAULT_OBS_KEYS, build_observation_space
 from sssnake.core.env_types import FullState, InfoDict, ObservationDict
-from sssnake.utils.env_config import EnvSpec, ResetOptions, RenderState
+from sssnake.core.env_config import EnvSpec, ResetOptions, RenderState
 from sssnake.core.env_helpers import load_obstacles_map, generate_safe_map
-from sssnake.utils.snake_action import SnakeAction
+from sssnake.core.snake_action import SnakeAction
 
 
 class EnvEngine (gym.Env):

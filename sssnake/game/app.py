@@ -1,13 +1,13 @@
 from customtkinter import *
 
 from sssnake.core.env_helpers import load_config
-from sssnake.utils.env_config import ResetOptions, RenderConfig
+from sssnake.core.env_config import ResetOptions, RenderConfig
 from sssnake.game.controls.game_controls import GameControls
 from sssnake.core.env_engine import EnvEngine
 from sssnake.game.controls.game_loop import GameLoop
 from sssnake.game.ui.renderer import Renderer
-from sssnake.utils.game_config import GAMECONFIG
-from sssnake.utils.theme_loader import get_theme_path
+from sssnake.game.game_config import GAMECONFIG
+from sssnake.game.theme_loader import get_theme_path
 from sssnake.game.ui.views import MainView
 from sssnake.game.lifecycle_manager import AppLifecycleManager
 
@@ -21,9 +21,8 @@ class App:
         self.app.grid_columnconfigure(0, weight=1)
 
         set_appearance_mode('dark')
-        set_default_color_theme(get_theme_path('Cobalt'))
 
-        self.env_spec, self.reset_options = load_config(jsonpath="sssnake/utils/default_params.json")
+        self.env_spec, self.reset_options = load_config(jsonpath="sssnake/core/default_params.json")
 
         if not headless:
             self.main_menu = MainView(self.app, self.reset_options)

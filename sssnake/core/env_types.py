@@ -4,7 +4,7 @@ from typing import Tuple, List, Dict, Any, Sequence
 
 import numpy as np
 
-from sssnake.utils.env_config import ResetOptions, EnvSpec
+from sssnake.core.env_config import ResetOptions, EnvSpec
 
 
 @dataclass

@@ -2,7 +2,7 @@ from __future__ import annotations
 import tkinter as tk
 from PIL import Image, ImageTk
 
-from sssnake.utils.env_config import RenderState, RenderConfig
+from sssnake.core.env_config import RenderState, RenderConfig
 from sssnake.core.env_renderer import state_to_array
 
 class Renderer:

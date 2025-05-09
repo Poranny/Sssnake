@@ -3,7 +3,7 @@ import random
 import numpy as np
 from PIL import Image
 from sssnake.game.ui.canvas_corners_masking import add_corners
-from sssnake.utils.env_config import RenderState
+from sssnake.core.env_config import RenderState
 
 _HEAD_BASE    = Image.open("data/textures/head.png").convert("RGBA")
 _SEGMENT_BASE = Image.open("data/textures/segment.png").convert("RGBA")

@@ -1,6 +1,6 @@
 import threading
 
-from sssnake.utils.env_config import ResetOptions, RenderState
+from sssnake.core.env_config import RenderState
 
 
 class GameLoop:

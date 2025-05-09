@@ -26,13 +26,12 @@ def state_to_array(
 ) -> np.ndarray:
       # 0) Bg
     if collision_bitmap_path:
-        bg = (
+        off = (
             Image.open(collision_bitmap_path)
                  .convert("L")
                  .resize((out_size, out_size), Image.LANCZOS)
                  .convert("RGBA")
         )
-        off = add_corners(bg, rad=5, fill_color=(0,0,0,0))
     else:
         off = Image.new("RGBA", (out_size, out_size), "black")
 

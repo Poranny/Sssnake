@@ -7,7 +7,6 @@ from sssnake.core.env_engine import EnvEngine
 from sssnake.game.controls.game_loop import GameLoop
 from sssnake.game.ui.renderer import Renderer
 from sssnake.game.game_config import GAMECONFIG
-from sssnake.game.theme_loader import get_theme_path
 from sssnake.game.ui.views import MainView
 from sssnake.game.lifecycle_manager import AppLifecycleManager
 

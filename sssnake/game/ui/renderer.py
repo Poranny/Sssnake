@@ -2,8 +2,9 @@ from __future__ import annotations
 import tkinter as tk
 from PIL import Image, ImageTk
 
-from sssnake.core.env_config import RenderState, RenderConfig
-from sssnake.core.env_renderer import state_to_array
+from sssnake.env.utils.state_def import RenderState
+from sssnake.env.utils.config_def import RenderConfig
+from sssnake.env.core.renderer import state_to_array
 
 class Renderer:
     def __init__(self, width: int, height: int):

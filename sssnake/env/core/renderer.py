@@ -2,7 +2,7 @@ import math
 import random
 import numpy as np
 from PIL import Image
-from sssnake.core.env_config import RenderState
+from sssnake.env.utils.state_def import RenderState
 
 _HEAD_BASE    = Image.open("data/textures/head.png").convert("RGBA")
 _SEGMENT_BASE = Image.open("data/textures/segment.png").convert("RGBA")

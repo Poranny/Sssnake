@@ -4,7 +4,7 @@ from typing import Tuple, List, Dict, Any, Sequence
 
 import numpy as np
 
-from sssnake.core.env_config import ResetOptions, EnvSpec
+from sssnake.env.utils.config_def import ResetOptions, EnvSpec
 
 
 @dataclass
@@ -45,3 +45,24 @@ class FullState:
 
 ObservationDict = Dict[str, Any]
 InfoDict = Dict[str, Any]
+
+
+@dataclass(slots=True)
+class RenderState:
+    head_position: Tuple[float, float]
+    head_direction: float
+    segments_positions: Sequence[Tuple[float, float]]
+    segments_num: float
+    map_size: float
+    candy_position: Tuple[float, float]
+
+    @classmethod
+    def from_full_state(cls, s: "FullState") -> RenderState:
+        return cls(
+            head_position=s.head_position,
+            head_direction=s.head_direction,
+            segments_positions=s.segments_positions.copy(),
+            candy_position=s.candy_position,
+            segments_num=s.segments_num,
+            map_size=s.map_size,
+        )

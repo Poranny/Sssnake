@@ -1,9 +1,9 @@
 from customtkinter import *
 
-from sssnake.core.env_helpers import load_config
-from sssnake.core.env_config import ResetOptions, RenderConfig
+from sssnake.env.utils.env_helpers import load_config
+from sssnake.env.utils.config_def import ResetOptions, RenderConfig
 from sssnake.game.controls.game_controls import GameControls
-from sssnake.core.env_engine import EnvEngine
+from sssnake.env.core.env_engine import EnvEngine
 from sssnake.game.controls.game_loop import GameLoop
 from sssnake.game.ui.renderer import Renderer
 from sssnake.game.game_config import GAMECONFIG
@@ -21,7 +21,7 @@ class App:
 
         set_appearance_mode('dark')
 
-        self.env_spec, self.reset_options = load_config(jsonpath="sssnake/core/default_params.json")
+        self.env_spec, self.reset_options = load_config(jsonpath="sssnake/env/utils/default_params.json")
 
         if not headless:
             self.main_menu = MainView(self.app, self.reset_options)

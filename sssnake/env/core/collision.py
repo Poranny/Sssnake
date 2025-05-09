@@ -1,6 +1,6 @@
 import math
 
-from sssnake.core.env_config import EnvSpec
+from sssnake.env.utils.config_def import EnvSpec
 
 
 class EnvCollision :

@@ -5,7 +5,7 @@ from tkinter import filedialog
 import tkinter as tk
 from typing import Dict, Any
 
-from sssnake.core.env_config import ResetOptions
+from sssnake.env.utils.config_def import ResetOptions
 
 class MainView(CTkFrame):
 

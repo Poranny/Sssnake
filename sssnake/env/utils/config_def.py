@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, fields
 from typing import Mapping, Any, Optional, Tuple, Sequence, Iterator
-
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,28 +64,6 @@ class RenderConfig:
 
     @classmethod
     def from_reset(cls, opts: ResetOptions) -> RenderConfig:
-
         return cls(
             map_bitmap_path=opts.map_bitmap_path
-        )
-
-
-@dataclass(slots=True)
-class RenderState:
-    head_position: Tuple[float, float]
-    head_direction: float
-    segments_positions: Sequence[Tuple[float, float]]
-    segments_num: float
-    map_size: float
-    candy_position: Tuple[float, float]
-
-    @classmethod
-    def from_full_state(cls, s: "FullState") -> RenderState:
-        return cls(
-            head_position=s.head_position,
-            head_direction=s.head_direction,
-            segments_positions=s.segments_positions.copy(),
-            candy_position=s.candy_position,
-            segments_num=s.segments_num,
-            map_size=s.map_size,
         )

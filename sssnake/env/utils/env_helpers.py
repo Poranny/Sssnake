@@ -1,4 +1,3 @@
-# env_helpers.py
 from __future__ import annotations
 
 import json
@@ -8,7 +7,7 @@ from typing import Union
 import numpy as np
 from PIL import Image
 
-from sssnake.core.env_config import EnvSpec, ResetOptions
+from sssnake.env.utils.config_def import EnvSpec, ResetOptions
 
 
 def load_obstacles_map(path: Union[str, Path], col_res: int) -> np.ndarray:

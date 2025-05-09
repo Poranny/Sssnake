@@ -1,9 +1,7 @@
-# env_schema.py
 from gymnasium import spaces
 from typing import Callable, Dict, Sequence
-from sssnake.core.env_config import EnvSpec
+from sssnake.env.utils.config_def import EnvSpec
 
-# Typ pomocniczy – fabryka przestrzeni
 SpaceFactory = Callable[[EnvSpec], spaces.Space]
 
 OBS_SPACE_FACTORIES: Dict[str, SpaceFactory] = {

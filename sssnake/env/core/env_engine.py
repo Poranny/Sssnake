@@ -5,17 +5,17 @@ from copy import deepcopy
 from math import sin, cos, radians
 import gymnasium as gym
 import numpy as np
-from gym import spaces
-from gym.utils import seeding
+from gymnasium import spaces
+from gymnasium.utils import seeding
 
-from sssnake.core.env_candies import EnvCandies
-from sssnake.core.env_collision import EnvCollision
-from sssnake.core.env_renderer import state_to_array
-from sssnake.core.env_schema import DEFAULT_OBS_KEYS, build_observation_space
-from sssnake.core.env_types import FullState, InfoDict, ObservationDict
-from sssnake.core.env_config import EnvSpec, ResetOptions, RenderState
-from sssnake.core.env_helpers import load_obstacles_map, generate_safe_map
-from sssnake.core.snake_action import SnakeAction
+from sssnake.env.core.candies import EnvCandies
+from sssnake.env.core.collision import EnvCollision
+from sssnake.env.core.renderer import state_to_array
+from sssnake.env.utils.schema import DEFAULT_OBS_KEYS, build_observation_space
+from sssnake.env.utils.state_def import FullState, InfoDict, ObservationDict, RenderState
+from sssnake.env.utils.config_def import EnvSpec, ResetOptions
+from sssnake.env.utils.env_helpers import load_obstacles_map, generate_safe_map
+from sssnake.env.utils.snake_action import SnakeAction
 
 
 class EnvEngine (gym.Env):

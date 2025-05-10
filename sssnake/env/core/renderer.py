@@ -3,10 +3,13 @@ import random
 import numpy as np
 from PIL import Image
 from sssnake.env.utils.state_def import RenderState
+from importlib.resources import files
 
-_HEAD_BASE    = Image.open("data/textures/head.png").convert("RGBA")
-_SEGMENT_BASE = Image.open("data/textures/segment.png").convert("RGBA")
-_CANDY_BASE   = Image.open("data/textures/candy.png").convert("RGBA")
+texture_path = files("sssnake.env.textures")
+
+_HEAD_BASE    = Image.open(texture_path.joinpath("head.png")).convert("RGBA")
+_SEGMENT_BASE = Image.open(texture_path.joinpath("segment.png")).convert("RGBA")
+_CANDY_BASE   = Image.open(texture_path.joinpath("candy.png")).convert("RGBA")
 
 _sprite_cache = {}
 _candy_angles = {}

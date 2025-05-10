@@ -1,4 +1,5 @@
 from customtkinter import *
+from importlib.resources import files
 
 from sssnake.env.utils.env_helpers import load_config
 from sssnake.env.utils.config_def import ResetOptions, RenderConfig
@@ -21,7 +22,8 @@ class App:
 
         set_appearance_mode('dark')
 
-        self.env_spec, self.reset_options = load_config(jsonpath="sssnake/env/utils/default_params.json")
+        default_json = files("sssnake.env.utils").joinpath("default_params.json")
+        self.env_spec, self.reset_options = load_config(jsonpath=default_json)
 
         if not headless:
             self.main_menu = MainView(self.app, self.reset_options)

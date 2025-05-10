@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sssnake"
+version = "1.0.0"
+description = "RL-compatible snake environment + optional game interface"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+  { name = "Adam Malinowski", email = "adam@poranny.it" },
+]
+license = "MIT"
+
+dependencies = [
+  "numpy>=1.22",
+  "gymnasium>=1.1.1",
+  "Pillow>=9.0"
+]
+
+[project.optional-dependencies]
+game = [
+  "customtkinter>=5.2.2"
+]

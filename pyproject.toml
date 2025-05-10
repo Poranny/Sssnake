@@ -12,6 +12,7 @@ authors = [
   { name = "Adam Malinowski", email = "adam@poranny.it" },
 ]
 license = "MIT"
+license-files = ["LICENSE"]
 
 dependencies = [
   "numpy>=1.22",

@@ -1,4 +1,0 @@
-Portions of this project include files from:
-https://github.com/avalon60/ctk_theme_builder
-Copyright (c) 2023 avalon60 (Clive Bostock)
-Licensed under the MIT License.

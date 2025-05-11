@@ -33,3 +33,11 @@ omit = ["sssnake/game/*"]
 
 [tool.coverage.report]
 show_missing = true
+
+[tool.ruff]
+line-length = 100
+extend-select = ["I","B","C90"]
+
+[tool.black]
+line-length = 100
+target-version = ["py313"]

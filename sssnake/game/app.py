@@ -9,12 +9,9 @@ from sssnake.game.controls.game_loop import GameLoop
 from sssnake.game.ui.renderer import Renderer
 from sssnake.game.game_config import GAMECONFIG
 from sssnake.game.ui.views import MainView
-from sssnake.game.lifecycle_manager import AppLifecycleManager
 
 class App:
     def __init__(self, headless=False):
-        self.lifecycle_manager = AppLifecycleManager()
-
         self.app = CTk()
         self.app.title(GAMECONFIG.title)
         self.app.geometry("1280x720")
@@ -43,8 +40,6 @@ class App:
                 self.start_game()
             elif data == "Finish" :
                 self.stop_game()
-            elif data == "Quit" :
-                self.lifecycle_manager.quit()
             else :
                 print("Mainview command unknown")
 

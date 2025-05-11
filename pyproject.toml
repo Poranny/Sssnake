@@ -26,3 +26,10 @@ dependencies = [
 game = [
   "customtkinter>=5.2.2"
 ]
+
+[tool.coverage.run]
+source = ["sssnake"]
+omit = ["sssnake/game/*"]
+
+[tool.coverage.report]
+show_missing = true

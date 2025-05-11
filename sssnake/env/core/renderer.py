@@ -14,7 +14,7 @@ _CANDY_BASE   = Image.open(texture_path.joinpath("candy.png")).convert("RGBA")
 _sprite_cache = {}
 _candy_angles = {}
 
-def get_sprite(base: Image.Image, size: int) -> Image.Image:
+def get_cached_sprite(base: Image.Image, size: int) -> Image.Image:
     key = (id(base), size)
     if key not in _sprite_cache:
         sz = max(1, size)
@@ -43,7 +43,7 @@ def state_to_array(
     cx, cy = render_state.candy_position
     candy_r = 1.45
     candy_px = max(1, int(2 * candy_r * out_size / map_size))
-    candy_sprite = get_sprite(_CANDY_BASE, candy_px)
+    candy_sprite = get_cached_sprite(_CANDY_BASE, candy_px)
     key = (int(cx), int(cy))
     if key not in _candy_angles:
         _candy_angles[key] = random.uniform(140, 220)
@@ -58,24 +58,18 @@ def state_to_array(
       # 2) Segments
     seg_r = 1.3
     seg_px = max(1, int(2 * seg_r * out_size / map_size))
-    seg_base = get_sprite(_SEGMENT_BASE, seg_px)
+    seg_base = get_cached_sprite(_SEGMENT_BASE, seg_px)
 
-      # Wyciągamy tylko tyle segmentów, ile faktycznie używamy
     positions = render_state.segments_positions[:render_state.segments_num]
-      # Tworzymy listę "poprzednich" pozycji: głowa + wszystkie segmenty oprócz ostatniego
     prev_positions = [render_state.head_position] + positions[:-1]
 
-      # Iterujemy od ostatniego segmentu do pierwszego
     for (sx, sy), (tx, ty) in zip(reversed(positions), reversed(prev_positions)):
-          # dx, dy ze „względu” na poprzedni segment (czy głowę, jeśli to segment #0)
         dx, dy = tx - sx, ty - sy
         angle = math.degrees(math.atan2(-dy, dx)) + 90
 
-          # obracamy sprite i wycinamy jego rozmiar
         seg_sprite = seg_base.rotate(angle, expand=True, resample=Image.BICUBIC)
         sw, sh = seg_sprite.size
 
-          # wklejamy na obrazek, centrując
         off.paste(
            seg_sprite,
          (int(sx * out_size / map_size - sw / 2),
@@ -86,7 +80,7 @@ def state_to_array(
     # 3) Head
     head_r = 1.5
     head_px = max(1, int(2 * head_r * out_size / map_size))
-    head_sprite = get_sprite(_HEAD_BASE, head_px)
+    head_sprite = get_cached_sprite(_HEAD_BASE, head_px)
     head_angle = render_state.head_direction + 180
     head_sprite = head_sprite.rotate(head_angle, expand=True, resample=Image.BICUBIC)
     hw, hh = head_sprite.size

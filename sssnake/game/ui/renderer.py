@@ -1,10 +1,12 @@
 from __future__ import annotations
+
 import tkinter as tk
+
 from PIL import Image, ImageTk
 
-from sssnake.env.utils.state_def import RenderState
-from sssnake.env.utils.config_def import RenderConfig
 from sssnake.env.core.renderer import state_to_array
+from sssnake.env.utils.config_def import RenderConfig
+from sssnake.env.utils.state_def import RenderState
 
 
 class Renderer:

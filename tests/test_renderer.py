@@ -1,9 +1,7 @@
 import numpy as np
-import pytest
 from PIL import Image
 
 from sssnake.env.core.renderer import get_cached_sprite, state_to_array
-from sssnake.env.utils.state_def import RenderState
 
 
 def test_get_cached_sprite(simple_render_state):

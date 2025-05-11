@@ -1,4 +1,3 @@
-import pytest
 from sssnake.env.utils.snake_action import SnakeAction
 
 

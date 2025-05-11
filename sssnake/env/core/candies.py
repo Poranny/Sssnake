@@ -2,8 +2,8 @@ import math
 
 import numpy as np
 
-from sssnake.env.utils.env_helpers import generate_safe_map
 from sssnake.env.utils.config_def import EnvSpec
+from sssnake.env.utils.env_helpers import generate_safe_map
 
 
 class EnvCandies:

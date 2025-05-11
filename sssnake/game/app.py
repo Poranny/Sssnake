@@ -1,13 +1,14 @@
-from customtkinter import *
 from importlib.resources import files
 
-from sssnake.env.utils.env_helpers import load_config
-from sssnake.env.utils.config_def import ResetOptions, RenderConfig
-from sssnake.game.controls.game_controls import GameControls
+from customtkinter import CTk, set_appearance_mode
+
 from sssnake.env.core.env_engine import EnvEngine
+from sssnake.env.utils.config_def import RenderConfig, ResetOptions
+from sssnake.env.utils.env_helpers import load_config
+from sssnake.game.controls.game_controls import GameControls
 from sssnake.game.controls.game_loop import GameLoop
-from sssnake.game.ui.renderer import Renderer
 from sssnake.game.game_config import GAMECONFIG
+from sssnake.game.ui.renderer import Renderer
 from sssnake.game.ui.views import MainView
 
 

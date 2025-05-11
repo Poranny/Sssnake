@@ -1,9 +1,11 @@
 import math
 import random
+from importlib.resources import files
+
 import numpy as np
 from PIL import Image
+
 from sssnake.env.utils.state_def import RenderState
-from importlib.resources import files
 
 texture_path = files("sssnake.env.textures")
 
@@ -68,7 +70,7 @@ def state_to_array(
     positions = render_state.segments_positions[: render_state.segments_num]
     prev_positions = [render_state.head_position] + positions[:-1]
 
-    for (sx, sy), (tx, ty) in zip(reversed(positions), reversed(prev_positions)):
+    for (sx, sy), (tx, ty) in zip(reversed(positions), reversed(prev_positions), strict=False):
         dx, dy = tx - sx, ty - sy
         angle = math.degrees(math.atan2(-dy, dx)) + 90
 

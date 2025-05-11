@@ -1,9 +1,9 @@
-from dataclasses import replace
-
-from customtkinter import *
-from tkinter import filedialog
 import tkinter as tk
-from typing import Dict, Any
+from dataclasses import replace
+from tkinter import filedialog
+from typing import Any, Dict
+
+from customtkinter import DISABLED, NORMAL, CTkButton, CTkEntry, CTkFrame, CTkLabel, CTkToplevel
 
 from sssnake.env.utils.config_def import ResetOptions
 

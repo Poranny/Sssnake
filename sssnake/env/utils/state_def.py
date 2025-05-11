@@ -1,10 +1,11 @@
 from __future__ import annotations
-from dataclasses import dataclass, asdict
-from typing import Tuple, List, Dict, Any, Sequence
+
+from dataclasses import asdict, dataclass
+from typing import Any, Dict, List, Sequence, Tuple
 
 import numpy as np
 
-from sssnake.env.utils.config_def import ResetOptions, EnvSpec
+from sssnake.env.utils.config_def import EnvSpec, ResetOptions
 
 
 @dataclass

@@ -7,9 +7,9 @@ from sssnake.env.core.candies import EnvCandies
 from sssnake.env.core.collision import EnvCollision
 from sssnake.env.core.env_engine import EnvEngine
 from sssnake.env.utils.env_helpers import (
+    generate_safe_map,
     load_config,
     load_obstacles_map,
-    generate_safe_map,
 )
 from sssnake.env.utils.state_def import FullState, RenderState
 

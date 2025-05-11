@@ -1,5 +1,7 @@
-from gymnasium import spaces
 from typing import Callable, Dict, Sequence
+
+from gymnasium import spaces
+
 from sssnake.env.utils.config_def import EnvSpec
 
 SpaceFactory = Callable[[EnvSpec], spaces.Space]

@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/Poranny/Sssnake/graph/badge.svg?token=4ZCZJ67Y1Z)](https://codecov.io/gh/Poranny/Sssnake)
+
 # Snake Gymnasium Environment
 
 A highly configurable Gymnasium-based environment simulating a snake-like agent navigating a 2D grid. The agent's goal is to collect candies to score points, avoid collisions with its own growing tail, obstacles, and map boundaries.

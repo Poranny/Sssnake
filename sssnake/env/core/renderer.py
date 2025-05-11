@@ -49,9 +49,7 @@ def state_to_array(
     key = (int(cx), int(cy))
     if key not in _candy_angles:
         _candy_angles[key] = random.uniform(140, 220)
-    candy_sprite = candy_sprite.rotate(
-        _candy_angles[key], expand=True, resample=Image.BICUBIC
-    )
+    candy_sprite = candy_sprite.rotate(_candy_angles[key], expand=True, resample=Image.BICUBIC)
     cw, ch = candy_sprite.size
     off.paste(
         candy_sprite,

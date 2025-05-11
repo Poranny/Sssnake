@@ -10,9 +10,7 @@ OBS_SPACE_FACTORIES: Dict[str, SpaceFactory] = {
     "head_position": lambda spec: spaces.Box(
         low=0.0, high=spec.max_map_size, shape=(2,), dtype=float
     ),
-    "head_direction": lambda _spec: spaces.Box(
-        low=0.0, high=360.0, shape=(), dtype=float
-    ),
+    "head_direction": lambda _spec: spaces.Box(low=0.0, high=360.0, shape=(), dtype=float),
     "candy_position": lambda spec: spaces.Box(
         low=0.0, high=spec.max_map_size, shape=(2,), dtype=float
     ),
@@ -46,9 +44,7 @@ OBS_SPACE_FACTORIES: Dict[str, SpaceFactory] = {
 }
 
 
-def build_observation_space(
-    spec: EnvSpec, obs_keys: Sequence[str] | None = None
-) -> spaces.Dict:
+def build_observation_space(spec: EnvSpec, obs_keys: Sequence[str] | None = None) -> spaces.Dict:
     keys = list(obs_keys) if obs_keys is not None else DEFAULT_OBS_KEYS
     return spaces.Dict({k: OBS_SPACE_FACTORIES[k](spec) for k in keys})
 

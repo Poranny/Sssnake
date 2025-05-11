@@ -183,9 +183,7 @@ class EnvEngine(gym.Env):
                 self.last_reset_options.map_bitmap_path,
             )
         else:
-            raise NotImplementedError(
-                f"Render mode '{self.render_mode}' is not supported."
-            )
+            raise NotImplementedError(f"Render mode '{self.render_mode}' is not supported.")
 
     def get_state(self) -> FullState:
         return deepcopy(self.state)
@@ -197,9 +195,7 @@ class EnvEngine(gym.Env):
 
     def place_head(self, options):
         start_coords = options.start_pos_coords
-        self.state.head_position = tuple(
-            coord * self.state.map_size for coord in start_coords
-        )
+        self.state.head_position = tuple(coord * self.state.map_size for coord in start_coords)
 
         self.head_path = [self.state.head_position]
 
@@ -223,6 +219,4 @@ class EnvEngine(gym.Env):
     def update_body_segments(self):
         for i in range(self.state.segments_num):
             distance_behind_head = (i + 1) * self.segment_length
-            self.state.segments_positions[i] = self.get_position_on_path(
-                distance_behind_head
-            )
+            self.state.segments_positions[i] = self.get_position_on_path(distance_behind_head)

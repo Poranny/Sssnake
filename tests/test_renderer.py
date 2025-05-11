@@ -27,9 +27,7 @@ def test_state_to_array(simple_render_state, tmp_path):
     bg_path = tmp_path / "bg.png"
     bg.save(bg_path)
 
-    arr2 = state_to_array(
-        simple_render_state, collision_bitmap_path=str(bg_path), out_size=8
-    )
+    arr2 = state_to_array(simple_render_state, collision_bitmap_path=str(bg_path), out_size=8)
     assert arr2.shape == (8, 8, 4)
 
     assert arr2.mean() > 0, "Some pixels should be white"

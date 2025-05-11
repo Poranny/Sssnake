@@ -44,9 +44,7 @@ def generate_safe_map(
             x_src = slice(max(0, -dx), min(n, n - dx))
             x_dst = slice(max(0, dx), min(n, n + dx))
 
-            dilated[y_dst, x_dst] = np.maximum(
-                dilated[y_dst, x_dst], obst[y_src, x_src]
-            )
+            dilated[y_dst, x_dst] = np.maximum(dilated[y_dst, x_dst], obst[y_src, x_src])
 
     safe_map = 1 - dilated
     return safe_map.astype(np.int8)

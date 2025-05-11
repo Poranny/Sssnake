@@ -27,12 +27,8 @@ class MainView(CTkFrame):
         self.menu_frame = CTkFrame(master)
         self.menu_frame.grid(row=0, column=1, padx=20, pady=20)
 
-        self.btn_play = CTkButton(
-            self.menu_frame, text="Play!", command=self._toggle_play
-        )
-        self.btn_settings = CTkButton(
-            self.menu_frame, text="Settings", command=self.open_settings
-        )
+        self.btn_play = CTkButton(self.menu_frame, text="Play!", command=self._toggle_play)
+        self.btn_settings = CTkButton(self.menu_frame, text="Settings", command=self.open_settings)
         self.btn_exit = CTkButton(
             self.menu_frame, text="Quit", command=lambda: self.notify_observers("Quit")
         )
@@ -76,17 +72,13 @@ class MainView(CTkFrame):
             frm.grid_columnconfigure(1, weight=0)
             frm.grid_columnconfigure(2, weight=0)
 
-        CTkLabel(frm_var, text="Variables").grid(
-            row=0, column=0, columnspan=3, pady=(0, 10)
-        )
+        CTkLabel(frm_var, text="Variables").grid(row=0, column=0, columnspan=3, pady=(0, 10))
         # CTkLabel(frm_const, text="Constants").grid(row=0, column=0, columnspan=3, pady=(0, 10))
 
         self._settings_widgets: Dict[str, Any] = {}
 
         def add_row(frame, idx, name, default_val):
-            CTkLabel(frame, text=name).grid(
-                row=idx, column=0, sticky="e", padx=5, pady=2
-            )
+            CTkLabel(frame, text=name).grid(row=idx, column=0, sticky="e", padx=5, pady=2)
 
             if name == "map_bitmap_path":
 
@@ -110,9 +102,7 @@ class MainView(CTkFrame):
                 entries = []
                 for i, val in enumerate(default_val):
                     entry = CTkEntry(sub, width=60)
-                    entry.pack(
-                        side="left", padx=(0, 4) if i < len(default_val) - 1 else 0
-                    )
+                    entry.pack(side="left", padx=(0, 4) if i < len(default_val) - 1 else 0)
                     entry.insert(0, str(val))
                     entries.append(entry)
 

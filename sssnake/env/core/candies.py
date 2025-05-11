@@ -38,9 +38,7 @@ class EnvCandies:
         return self.random_candy_pos_nomap()
 
     def random_candy_pos_nomap(self):
-        assert (
-            self.rng is not None
-        ), "RNG not set – call set_rng() from EnvEngine.reset()"
+        assert self.rng is not None, "RNG not set – call set_rng() from EnvEngine.reset()"
 
         min_dist = self.candy_wall_distance
         max_pos = self.map_size - min_dist

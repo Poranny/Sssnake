@@ -1,4 +1,5 @@
-[![codecov](https://codecov.io/gh/Poranny/Sssnake/graph/badge.svg?token=4ZCZJ67Y1Z)](https://codecov.io/gh/Poranny/Sssnake)
+[![CI](https://github.com/Poranny/Sssnake/actions/workflows/ci.yml/badge.svg)](https://github.com/Poranny/Sssnake/actions) [![codecov](https://codecov.io/gh/Poranny/Sssnake/graph/badge.svg?token=4ZCZJ67Y1Z)](https://codecov.io/gh/Poranny/Sssnake) ![Python](https://img.shields.io/badge/python-3.13%2B-blue.svg)
+ ![License](https://img.shields.io/github/license/Poranny/Sssnake)
 
 # Snake Gymnasium Environment
 

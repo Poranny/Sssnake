@@ -5,17 +5,6 @@ from PIL import Image
 from sssnake.env.core.renderer import get_cached_sprite, state_to_array
 from sssnake.env.utils.state_def import RenderState
 
-@pytest.fixture
-def simple_render_state():
-    return RenderState(
-        head_position=(5.0, 5.0),
-        head_direction=0.0,
-        segments_positions=[(5.0, 5.0)],
-        segments_num=0,
-        map_size=10.0,
-        candy_position=(5.0, 5.0),
-    )
-
 def test_get_cached_sprite(simple_render_state):
     base = Image.new("RGBA", (4, 4), "black")
     size = 8

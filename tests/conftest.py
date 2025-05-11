@@ -7,7 +7,7 @@ from sssnake.env.core.candies import EnvCandies
 from sssnake.env.core.collision import EnvCollision
 from sssnake.env.core.env_engine import EnvEngine
 from sssnake.env.utils.env_helpers import load_config, load_obstacles_map, generate_safe_map
-from sssnake.env.utils.state_def import FullState
+from sssnake.env.utils.state_def import FullState, RenderState
 
 
 @pytest.fixture(params=["default_params.json", "params_map.json"])
@@ -58,3 +58,14 @@ def env_engine(spec_and_opts):
     env = EnvEngine(spec)
     env.reset(options=opts)
     return env
+
+@pytest.fixture
+def simple_render_state():
+    return RenderState(
+        head_position=(5.0, 5.0),
+        head_direction=0.0,
+        segments_positions=[(5.0, 5.0)],
+        segments_num=0,
+        map_size=10.0,
+        candy_position=(5.0, 5.0),
+    )

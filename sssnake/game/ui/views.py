@@ -7,6 +7,7 @@ from typing import Dict, Any
 
 from sssnake.env.utils.config_def import ResetOptions
 
+
 class MainView(CTkFrame):
 
     def __init__(self, master, reset_options: ResetOptions):
@@ -26,9 +27,15 @@ class MainView(CTkFrame):
         self.menu_frame = CTkFrame(master)
         self.menu_frame.grid(row=0, column=1, padx=20, pady=20)
 
-        self.btn_play = CTkButton(self.menu_frame, text="Play!",  command=self._toggle_play)
-        self.btn_settings = CTkButton(self.menu_frame, text="Settings", command=self.open_settings)
-        self.btn_exit = CTkButton(self.menu_frame, text="Quit",  command=lambda: self.notify_observers("Quit"))
+        self.btn_play = CTkButton(
+            self.menu_frame, text="Play!", command=self._toggle_play
+        )
+        self.btn_settings = CTkButton(
+            self.menu_frame, text="Settings", command=self.open_settings
+        )
+        self.btn_exit = CTkButton(
+            self.menu_frame, text="Quit", command=lambda: self.notify_observers("Quit")
+        )
 
         self.btn_play.grid(row=0, column=0, padx=20, pady=20)
         self.btn_settings.grid(row=1, column=0, padx=20, pady=20)
@@ -63,21 +70,26 @@ class MainView(CTkFrame):
         frm_var = CTkFrame(win)
         frm_var.grid(row=0, column=0, padx=10, pady=10, sticky="n")
         frm_const = CTkFrame(win)
-        #frm_const.grid(row=0, column=1, padx=10, pady=10, sticky="n")
+        # frm_const.grid(row=0, column=1, padx=10, pady=10, sticky="n")
 
         for frm in (frm_var, frm_const):
             frm.grid_columnconfigure(1, weight=0)
             frm.grid_columnconfigure(2, weight=0)
 
-        CTkLabel(frm_var, text="Variables").grid(row=0, column=0, columnspan=3, pady=(0, 10))
-        #CTkLabel(frm_const, text="Constants").grid(row=0, column=0, columnspan=3, pady=(0, 10))
+        CTkLabel(frm_var, text="Variables").grid(
+            row=0, column=0, columnspan=3, pady=(0, 10)
+        )
+        # CTkLabel(frm_const, text="Constants").grid(row=0, column=0, columnspan=3, pady=(0, 10))
 
         self._settings_widgets: Dict[str, Any] = {}
 
         def add_row(frame, idx, name, default_val):
-            CTkLabel(frame, text=name).grid(row=idx, column=0, sticky="e", padx=5, pady=2)
+            CTkLabel(frame, text=name).grid(
+                row=idx, column=0, sticky="e", padx=5, pady=2
+            )
 
             if name == "map_bitmap_path":
+
                 def choose_file():
                     fp = filedialog.askopenfilename(
                         filetypes=[("Image Files", "*.png *.bmp *.jpg")]
@@ -98,7 +110,9 @@ class MainView(CTkFrame):
                 entries = []
                 for i, val in enumerate(default_val):
                     entry = CTkEntry(sub, width=60)
-                    entry.pack(side="left", padx=(0, 4) if i < len(default_val) - 1 else 0)
+                    entry.pack(
+                        side="left", padx=(0, 4) if i < len(default_val) - 1 else 0
+                    )
                     entry.insert(0, str(val))
                     entries.append(entry)
 
@@ -124,7 +138,7 @@ class MainView(CTkFrame):
         new_vals: dict[str, Any] = {}
 
         for name, widget in self._settings_widgets.items():
-            if isinstance(widget, tuple):                           # tuple/ list entry
+            if isinstance(widget, tuple):  # tuple/ list entry
                 values = []
                 for w in widget:
                     txt = w.get().strip()
@@ -134,7 +148,7 @@ class MainView(CTkFrame):
                         val = txt
                     values.append(val)
                 new_vals[name] = tuple(values)
-            else:                                                   # pojedynczy entry
+            else:  # pojedynczy entry
                 txt = widget.get().strip()
                 try:
                     new_vals[name] = float(txt)
@@ -152,7 +166,6 @@ class MainView(CTkFrame):
         self.notify_observers(self.reset_options)
 
         window.destroy()
-
 
     def add_observer(self, cb):
         self.observers.append(cb)

@@ -7,12 +7,13 @@ from importlib.resources import files
 
 texture_path = files("sssnake.env.textures")
 
-_HEAD_BASE    = Image.open(texture_path.joinpath("head.png")).convert("RGBA")
+_HEAD_BASE = Image.open(texture_path.joinpath("head.png")).convert("RGBA")
 _SEGMENT_BASE = Image.open(texture_path.joinpath("segment.png")).convert("RGBA")
-_CANDY_BASE   = Image.open(texture_path.joinpath("candy.png")).convert("RGBA")
+_CANDY_BASE = Image.open(texture_path.joinpath("candy.png")).convert("RGBA")
 
 _sprite_cache = {}
 _candy_angles = {}
+
 
 def get_cached_sprite(base: Image.Image, size: int) -> Image.Image:
     key = (id(base), size)
@@ -21,18 +22,17 @@ def get_cached_sprite(base: Image.Image, size: int) -> Image.Image:
         _sprite_cache[key] = base.resize((sz, sz), Image.LANCZOS)
     return _sprite_cache[key]
 
+
 def state_to_array(
-    render_state: RenderState,
-    collision_bitmap_path: str = "",
-    out_size: int = 400
+    render_state: RenderState, collision_bitmap_path: str = "", out_size: int = 400
 ) -> np.ndarray:
-      # 0) Bg
+    # 0) Bg
     if collision_bitmap_path:
         off = (
             Image.open(collision_bitmap_path)
-                 .convert("L")
-                 .resize((out_size, out_size), Image.LANCZOS)
-                 .convert("RGBA")
+            .convert("L")
+            .resize((out_size, out_size), Image.LANCZOS)
+            .convert("RGBA")
         )
     else:
         off = Image.new("RGBA", (out_size, out_size), "black")
@@ -47,20 +47,25 @@ def state_to_array(
     key = (int(cx), int(cy))
     if key not in _candy_angles:
         _candy_angles[key] = random.uniform(140, 220)
-    candy_sprite = candy_sprite.rotate(_candy_angles[key], expand=True, resample=Image.BICUBIC)
+    candy_sprite = candy_sprite.rotate(
+        _candy_angles[key], expand=True, resample=Image.BICUBIC
+    )
     cw, ch = candy_sprite.size
     off.paste(
         candy_sprite,
-        (int(cx * out_size / map_size - cw/2), int(cy * out_size / map_size - ch/2)),
-        candy_sprite
+        (
+            int(cx * out_size / map_size - cw / 2),
+            int(cy * out_size / map_size - ch / 2),
+        ),
+        candy_sprite,
     )
 
-      # 2) Segments
+    # 2) Segments
     seg_r = 1.3
     seg_px = max(1, int(2 * seg_r * out_size / map_size))
     seg_base = get_cached_sprite(_SEGMENT_BASE, seg_px)
 
-    positions = render_state.segments_positions[:render_state.segments_num]
+    positions = render_state.segments_positions[: render_state.segments_num]
     prev_positions = [render_state.head_position] + positions[:-1]
 
     for (sx, sy), (tx, ty) in zip(reversed(positions), reversed(prev_positions)):
@@ -71,10 +76,12 @@ def state_to_array(
         sw, sh = seg_sprite.size
 
         off.paste(
-           seg_sprite,
-         (int(sx * out_size / map_size - sw / 2),
-               int(sy * out_size / map_size - sh / 2)),
-           seg_sprite
+            seg_sprite,
+            (
+                int(sx * out_size / map_size - sw / 2),
+                int(sy * out_size / map_size - sh / 2),
+            ),
+            seg_sprite,
         )
 
     # 3) Head
@@ -87,8 +94,11 @@ def state_to_array(
     hx, hy = render_state.head_position
     off.paste(
         head_sprite,
-        (int(hx * out_size / map_size - hw/2), int(hy * out_size / map_size - hh/2)),
-        head_sprite
+        (
+            int(hx * out_size / map_size - hw / 2),
+            int(hy * out_size / map_size - hh / 2),
+        ),
+        head_sprite,
     )
 
     return np.array(off, dtype=np.uint8)

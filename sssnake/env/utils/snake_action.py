@@ -1,5 +1,6 @@
 from enum import unique, IntEnum
 
+
 @unique
 class SnakeAction(IntEnum):
     NONE = 0

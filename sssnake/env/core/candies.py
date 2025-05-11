@@ -6,7 +6,7 @@ from sssnake.env.utils.env_helpers import generate_safe_map
 from sssnake.env.utils.config_def import EnvSpec
 
 
-class EnvCandies :
+class EnvCandies:
     def __init__(self, env_spec: EnvSpec):
         self.candy_distance = env_spec.candy_collect_distance
         self.candy_wall_distance = env_spec.candy_pos_wall_distance
@@ -38,7 +38,9 @@ class EnvCandies :
         return self.random_candy_pos_nomap()
 
     def random_candy_pos_nomap(self):
-        assert self.rng is not None, "RNG not set – call set_rng() from EnvEngine.reset()"
+        assert (
+            self.rng is not None
+        ), "RNG not set – call set_rng() from EnvEngine.reset()"
 
         min_dist = self.candy_wall_distance
         max_pos = self.map_size - min_dist

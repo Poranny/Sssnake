@@ -12,21 +12,24 @@ from sssnake.env.core.candies import EnvCandies
 from sssnake.env.core.collision import EnvCollision
 from sssnake.env.core.renderer import state_to_array
 from sssnake.env.utils.schema import DEFAULT_OBS_KEYS, build_observation_space
-from sssnake.env.utils.state_def import FullState, InfoDict, ObservationDict, RenderState
+from sssnake.env.utils.state_def import (
+    FullState,
+    InfoDict,
+    ObservationDict,
+    RenderState,
+)
 from sssnake.env.utils.config_def import EnvSpec, ResetOptions
 from sssnake.env.utils.env_helpers import load_obstacles_map, generate_safe_map
 from sssnake.env.utils.snake_action import SnakeAction
 
 
-class EnvEngine (gym.Env):
+class EnvEngine(gym.Env):
     def __init__(self, env_spec: EnvSpec, render_mode: str | None = None):
         super().__init__()
         self.last_reset_options = None
 
         if render_mode not in {None, "rgb_array"}:
-            raise ValueError(
-                f"Rendermode '{render_mode}' not supported."
-            )
+            raise ValueError(f"Rendermode '{render_mode}' not supported.")
 
         self.num_steps = None
         self.render_mode = render_mode
@@ -38,7 +41,7 @@ class EnvEngine (gym.Env):
         self.observation_space = build_observation_space(env_spec, self.obs_keys)
 
         self.env_spec = env_spec
-        self.state : FullState | None = None
+        self.state: FullState | None = None
 
         self.head_path = []
         self.segment_length = self.env_spec.tail_segment_length
@@ -46,8 +49,7 @@ class EnvEngine (gym.Env):
         self.env_collision = EnvCollision(env_spec)
         self.env_candies = EnvCandies(env_spec)
 
-
-    def reset(self, *, seed: int|None = None, options: ResetOptions | None = None) :
+    def reset(self, *, seed: int | None = None, options: ResetOptions | None = None):
         self.np_random, seed = seeding.np_random(seed)
 
         self.last_reset_options = options
@@ -64,17 +66,17 @@ class EnvEngine (gym.Env):
         self.calculate_obstacles_map(options)
         self.init_candies()
 
-        info : InfoDict = {}
-        obs : ObservationDict = self.state.to_obs(self.obs_keys)
+        info: InfoDict = {}
+        obs: ObservationDict = self.state.to_obs(self.obs_keys)
 
         return obs, info
 
-    def step (self, action_int: int) :
+    def step(self, action_int: int):
         assert self.state is not None, "Environment not reset!"
 
         current_reward = 0
         terminated = truncated = False
-        info : InfoDict = {}
+        info: InfoDict = {}
 
         action = SnakeAction(action_int)
 
@@ -82,14 +84,13 @@ class EnvEngine (gym.Env):
 
         self.move_head()
 
-
-        if self.env_collision.hit_anything(self.state) :
-            terminated=True
-            obs : ObservationDict = self.state.to_obs(self.obs_keys)
+        if self.env_collision.hit_anything(self.state):
+            terminated = True
+            obs: ObservationDict = self.state.to_obs(self.obs_keys)
             return obs, current_reward, terminated, truncated, info
 
-        if self.env_candies.met_candy(self.state) :
-            if self.env_spec.tail_max_segment > self.state.segments_num :
+        if self.env_candies.met_candy(self.state):
+            if self.env_spec.tail_max_segment > self.state.segments_num:
                 self.add_segment()
             current_reward = 1
             self.state.candy_position = self.env_candies.random_candy_pos(self.state)
@@ -99,7 +100,7 @@ class EnvEngine (gym.Env):
 
         truncated = self.num_steps >= self.env_spec.max_num_steps
 
-        obs : ObservationDict = self.state.to_obs(self.obs_keys)
+        obs: ObservationDict = self.state.to_obs(self.obs_keys)
 
         return obs, current_reward, terminated, truncated, info
 
@@ -132,10 +133,11 @@ class EnvEngine (gym.Env):
             last_dir_rad = radians(self.state.head_direction)
             last_dir_x, last_dir_y = -sin(last_dir_rad), -cos(last_dir_rad)
 
-        else :
+        else:
+
             def normalized_direction(from_pos, to_pos):
                 dx, dy = from_pos[0] - to_pos[0], from_pos[1] - to_pos[1]
-                length = (dx ** 2 + dy ** 2) ** 0.5
+                length = (dx**2 + dy**2) ** 0.5
                 if length > 0:
                     return dx / length, dy / length
                 else:
@@ -143,21 +145,31 @@ class EnvEngine (gym.Env):
 
             last_pos_x, last_pos_y = self.state.segments_positions[-1]
 
-            if self.state.segments_num == 1 :
-                last_dir_x, last_dir_y = normalized_direction(self.state.head_position, self.state.segments_positions[-1])
+            if self.state.segments_num == 1:
+                last_dir_x, last_dir_y = normalized_direction(
+                    self.state.head_position, self.state.segments_positions[-1]
+                )
 
-            else :
-                last_dir_x, last_dir_y = normalized_direction(self.state.segments_positions[-1], self.state.segments_positions[-2])
+            else:
+                last_dir_x, last_dir_y = normalized_direction(
+                    self.state.segments_positions[-1], self.state.segments_positions[-2]
+                )
 
-        self.state.segments_positions [self.state.segments_num] = (last_pos_x + last_dir_x * self.segment_length,
-                                                               last_pos_y + last_dir_y * self.segment_length)
+        self.state.segments_positions[self.state.segments_num] = (
+            last_pos_x + last_dir_x * self.segment_length,
+            last_pos_y + last_dir_y * self.segment_length,
+        )
         self.state.segments_num += 1
 
-    def calculate_obstacles_map(self, reset_options : ResetOptions):
+    def calculate_obstacles_map(self, reset_options: ResetOptions):
         map_size = reset_options.map_size
-        obstacles_map = load_obstacles_map(reset_options.map_bitmap_path, self.env_spec.collision_map_resolution)
+        obstacles_map = load_obstacles_map(
+            reset_options.map_bitmap_path, self.env_spec.collision_map_resolution
+        )
 
-        self.state.safe_map_snake = generate_safe_map(self.env_collision.obstacle_hit_distance, map_size, obstacles_map)
+        self.state.safe_map_snake = generate_safe_map(
+            self.env_collision.obstacle_hit_distance, map_size, obstacles_map
+        )
 
         self.env_candies.generate_free_cells_candy(obstacles_map)
 
@@ -165,9 +177,14 @@ class EnvEngine (gym.Env):
         if self.render_mode is None:
             return None
         elif self.render_mode == "rgb_array":
-            return state_to_array(RenderState.from_full_state(self.state), self.last_reset_options.map_bitmap_path)
+            return state_to_array(
+                RenderState.from_full_state(self.state),
+                self.last_reset_options.map_bitmap_path,
+            )
         else:
-            raise NotImplementedError(f"Render mode '{self.render_mode}' is not supported.")
+            raise NotImplementedError(
+                f"Render mode '{self.render_mode}' is not supported."
+            )
 
     def get_state(self) -> FullState:
         return deepcopy(self.state)
@@ -179,16 +196,18 @@ class EnvEngine (gym.Env):
 
     def place_head(self, options):
         start_coords = options.start_pos_coords
-        self.state.head_position = tuple(coord * self.state.map_size for coord in start_coords)
+        self.state.head_position = tuple(
+            coord * self.state.map_size for coord in start_coords
+        )
 
         self.head_path = [self.state.head_position]
 
     def apply_turn(self, action):
-        if action is SnakeAction.LEFT :
+        if action is SnakeAction.LEFT:
             self.state.head_direction += self.state.turnspeed
-        elif action is SnakeAction.RIGHT :
+        elif action is SnakeAction.RIGHT:
             self.state.head_direction -= self.state.turnspeed
-        elif action is SnakeAction.NONE :
+        elif action is SnakeAction.NONE:
             pass
 
         self.state.head_direction %= 360.0
@@ -203,4 +222,6 @@ class EnvEngine (gym.Env):
     def update_body_segments(self):
         for i in range(self.state.segments_num):
             distance_behind_head = (i + 1) * self.segment_length
-            self.state.segments_positions[i] = self.get_position_on_path(distance_behind_head)
+            self.state.segments_positions[i] = self.get_position_on_path(
+                distance_behind_head
+            )

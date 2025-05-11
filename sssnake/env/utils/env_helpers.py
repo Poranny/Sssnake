@@ -39,19 +39,17 @@ def generate_safe_map(
 
     for dy in range(-margin, margin + 1):
         y_src = slice(max(0, -dy), min(n, n - dy))
-        y_dst = slice(max(0,  dy), min(n, n + dy))
+        y_dst = slice(max(0, dy), min(n, n + dy))
         for dx in range(-margin, margin + 1):
             x_src = slice(max(0, -dx), min(n, n - dx))
-            x_dst = slice(max(0,  dx), min(n, n + dx))
+            x_dst = slice(max(0, dx), min(n, n + dx))
 
             dilated[y_dst, x_dst] = np.maximum(
-                dilated[y_dst, x_dst],
-                obst[y_src, x_src]
+                dilated[y_dst, x_dst], obst[y_src, x_src]
             )
 
     safe_map = 1 - dilated
     return safe_map.astype(np.int8)
-
 
 
 def load_config(jsonpath: str):

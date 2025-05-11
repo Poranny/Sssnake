@@ -3,7 +3,7 @@ import math
 from sssnake.env.utils.config_def import EnvSpec
 
 
-class EnvCollision :
+class EnvCollision:
     def __init__(self, env_spec: EnvSpec):
         self.obstacles_map = []
 
@@ -12,11 +12,7 @@ class EnvCollision :
         self.obstacle_hit_distance = env_spec.hit_obstacle_distance
 
     def hit_anything(self, state):
-        return (
-            self.hit_tail(state) or
-            self.hit_wall(state) or
-            self.hit_obstacle(state)
-        )
+        return self.hit_tail(state) or self.hit_wall(state) or self.hit_obstacle(state)
 
     def hit_obstacle(self, state):
         if state.safe_map_snake is None or state.safe_map_snake.size == 0:
@@ -33,7 +29,7 @@ class EnvCollision :
 
         return state.safe_map_snake[py][px] == 0
 
-    def hit_wall (self, state):
+    def hit_wall(self, state):
         hpx, hpy = state.head_position
 
         hit = any(
@@ -56,7 +52,7 @@ class EnvCollision :
             cpx, cpy = segment_pos
             distance = math.sqrt((hpx - cpx) ** 2 + (hpy - cpy) ** 2)
 
-            if distance < self.tail_hit_distance :
+            if distance < self.tail_hit_distance:
                 hit = True
                 break
 

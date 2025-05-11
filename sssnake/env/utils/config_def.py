@@ -13,17 +13,17 @@ class EnvSpec:
 
     hit_tail_distance: float
     hit_wall_distance: float
-    hit_obstacle_distance:float
+    hit_obstacle_distance: float
 
     tail_segment_length: float
     tail_max_segment: int
 
     collision_map_resolution: int
 
-    max_map_size : float
+    max_map_size: float
     min_map_size: float
 
-    max_speed : float
+    max_speed: float
     min_speed: float
 
     max_turnspeed: float
@@ -36,11 +36,12 @@ class EnvSpec:
     def from_dict(d: Mapping[str, Any]) -> EnvSpec:
         return EnvSpec(**d)
 
+
 @dataclass(slots=True)
 class ResetOptions:
     start_pos_coords: tuple[float, float]
     start_dir: float
-    
+
     snake_speed: float
     snake_turnspeed: float
 
@@ -49,13 +50,12 @@ class ResetOptions:
 
     @staticmethod
     def from_dict(d: Mapping[str, Any]) -> ResetOptions:
-        return ResetOptions(
-            **{k: v for k, v in d.items()}
-        )
+        return ResetOptions(**{k: v for k, v in d.items()})
 
     def iter(self) -> Iterator[Tuple[str, type, Any]]:
         for f in fields(self):
             yield f.name, f.type, getattr(self, f.name)
+
 
 @dataclass(frozen=True, slots=True)
 class RenderConfig:
@@ -63,6 +63,4 @@ class RenderConfig:
 
     @classmethod
     def from_reset(cls, opts: ResetOptions) -> RenderConfig:
-        return cls(
-            map_bitmap_path=opts.map_bitmap_path
-        )
+        return cls(map_bitmap_path=opts.map_bitmap_path)

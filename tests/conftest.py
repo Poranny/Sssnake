@@ -6,7 +6,11 @@ import pytest
 from sssnake.env.core.candies import EnvCandies
 from sssnake.env.core.collision import EnvCollision
 from sssnake.env.core.env_engine import EnvEngine
-from sssnake.env.utils.env_helpers import load_config, load_obstacles_map, generate_safe_map
+from sssnake.env.utils.env_helpers import (
+    load_config,
+    load_obstacles_map,
+    generate_safe_map,
+)
 from sssnake.env.utils.state_def import FullState, RenderState
 
 
@@ -14,13 +18,16 @@ from sssnake.env.utils.state_def import FullState, RenderState
 def config_path(request):
     return Path(__file__).parent / "input_data" / request.param
 
+
 @pytest.fixture
 def spec_and_opts(config_path):
     return load_config(config_path)
 
+
 @pytest.fixture
 def rng():
     return np.random.default_rng(42)
+
 
 @pytest.fixture
 def env_candies(spec_and_opts, rng):
@@ -30,10 +37,12 @@ def env_candies(spec_and_opts, rng):
     candy.set_rng(rng)
     return candy
 
+
 @pytest.fixture
 def collision_checker(spec_and_opts):
     spec, _ = spec_and_opts
     return EnvCollision(spec)
+
 
 @pytest.fixture
 def full_state(spec_and_opts):
@@ -52,12 +61,14 @@ def safe_map(obstacle_map, spec_and_opts):
     spec, opts = spec_and_opts
     return generate_safe_map(spec.hit_obstacle_distance, opts.map_size, obstacle_map)
 
+
 @pytest.fixture
 def env_engine(spec_and_opts):
     spec, opts = spec_and_opts
     env = EnvEngine(spec)
     env.reset(options=opts)
     return env
+
 
 @pytest.fixture
 def simple_render_state():

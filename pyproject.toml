@@ -7,7 +7,7 @@ name = "sssnake"
 version = "1.0.0"
 description = "RL-compatible snake environment + optional game interface"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.13"
 authors = [
   { name = "Adam Malinowski", email = "adam@poranny.it" },
 ]

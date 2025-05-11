@@ -8,7 +8,7 @@
 
     "map_size": 30,
 
-    "map_bitmap_path": "tests/input_data/maps/map_22.png"
+    "map_bitmap_path": "input_data/maps/map_22.png"
   },
 
   "env_spec": {

@@ -52,4 +52,5 @@ class Renderer:
 
     def async_render(self, render_state: RenderState):
         img = self.compute_render(render_state)
+        assert self.frame_buffer is not None
         self.frame_buffer.paste(img)

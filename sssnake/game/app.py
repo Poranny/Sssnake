@@ -16,7 +16,7 @@ from sssnake.game.ui.views import MainView
 
 
 class App:
-    def __init__(self, headless: bool = False) -> None:  # <- adnotacja
+    def __init__(self, headless: bool = False) -> None:
         self.app: CTk = CTk()
         self.app.title(GAMECONFIG.title)
         self.app.geometry("1280x720")

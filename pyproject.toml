@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0", "wheel", "build"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -49,3 +49,6 @@ target-version = ["py313"]
 python_version = "3.13"
 ignore_missing_imports = true
 warn_unused_ignores = false
+
+[tool.setuptools.package-data]
+"sssnake.env.textures" = ["*.png", "*.jpg", "*.bmp"]

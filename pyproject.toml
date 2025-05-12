@@ -21,7 +21,8 @@ dependencies = [
   "pytest>=8.3.5",
   "pytest-cov>=6.1.1",
   "ruff>=0.11.9",
-  "black>=25.1.0"
+  "black>=25.1.0",
+  "mypy>=1.15.0"
 ]
 
 [project.optional-dependencies]
@@ -43,3 +44,8 @@ extend-select = ["I","B","C90"]
 [tool.black]
 line-length = 100
 target-version = ["py313"]
+
+[tool.mypy]
+python_version = "3.13"
+ignore_missing_imports = true
+warn_unused_ignores = false

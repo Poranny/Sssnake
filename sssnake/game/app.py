@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from importlib.resources import files
-from typing import Any, Callable
+from typing import Any
 
 from customtkinter import CTk, set_appearance_mode
 
@@ -16,7 +16,7 @@ from sssnake.game.ui.views import MainView
 
 
 class App:
-    def __init__(self, headless: bool = False) -> None:          # <- adnotacja
+    def __init__(self, headless: bool = False) -> None:  # <- adnotacja
         self.app: CTk = CTk()
         self.app.title(GAMECONFIG.title)
         self.app.geometry("1280x720")
@@ -34,11 +34,11 @@ class App:
             self.main_menu.add_observer(self.on_mainview)  # type: ignore[call-arg]
 
             self.renderer: Renderer = Renderer(width=600, height=600)
-            self.renderer.set_parent(self.main_menu)       # type: ignore[call-arg]
+            self.renderer.set_parent(self.main_menu)  # type: ignore[call-arg]
             self.renderer.set_render_config(RenderConfig.from_reset(self.reset_options))
 
         self.env: EnvEngine = EnvEngine(self.env_spec)
-        self.controls: GameControls = GameControls(self.app)     # type: ignore[call-arg]
+        self.controls: GameControls = GameControls(self.app)  # type: ignore[call-arg]
 
     def on_mainview(self, data: Any) -> None:
         if isinstance(data, str):
@@ -58,19 +58,19 @@ class App:
         self.env.reset(options=self.reset_options)
         self.renderer.set_render_config(RenderConfig.from_reset(self.reset_options))
 
-        self.game_loop: GameLoop = GameLoop(        # type: ignore[call-arg]
+        self.game_loop: GameLoop = GameLoop(  # type: ignore[call-arg]
             master=self,
             app=self.app,
             env_engine=self.env,
             game_controls=self.controls,
             renderer=self.renderer,
         )
-        self.game_loop.start_game()                 # type: ignore[call-arg]
-        self.main_menu.game_started()               # type: ignore[call-arg]
+        self.game_loop.start_game()  # type: ignore[call-arg]
+        self.main_menu.game_started()  # type: ignore[call-arg]
 
     def stop_game(self) -> None:
-        self.main_menu.game_ended()                 # type: ignore[call-arg]
-        self.game_loop.pause_game()                 # type: ignore[call-arg]
+        self.main_menu.game_ended()  # type: ignore[call-arg]
+        self.game_loop.pause_game()  # type: ignore[call-arg]
 
     def run(self) -> None:
         self.app.mainloop()

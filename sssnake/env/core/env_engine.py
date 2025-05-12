@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from copy import deepcopy
 from math import cos, radians, sin
+from typing import Any, Dict, List, Tuple
 
 import gymnasium as gym
 import numpy as np
@@ -25,16 +26,16 @@ from sssnake.env.utils.state_def import (
 
 
 class EnvEngine(gym.Env):
-    def __init__(self, env_spec: EnvSpec, render_mode: str | None = None):
+    def __init__(self, env_spec: EnvSpec, render_mode: str | None = None) -> None:
         super().__init__()
-        self.last_reset_options = None
+        self.last_reset_options: ResetOptions | None = None
 
         if render_mode not in {None, "rgb_array"}:
             raise ValueError(f"Rendermode '{render_mode}' not supported.")
 
-        self.num_steps = None
+        self.num_steps: int = 0
         self.render_mode = render_mode
-        self.np_random: np.random.Generator | None = None
+        self.np_random: np.random.Generator
 
         self.obs_keys = DEFAULT_OBS_KEYS
 
@@ -44,32 +45,37 @@ class EnvEngine(gym.Env):
         self.env_spec = env_spec
         self.state: FullState | None = None
 
-        self.head_path = []
+        self.head_path: List[Tuple[float, float]] = []
         self.segment_length = self.env_spec.tail_segment_length
 
         self.env_collision = EnvCollision(env_spec)
         self.env_candies = EnvCandies(env_spec)
 
-    def reset(self, *, seed: int | None = None, options: ResetOptions | None = None):
+    def reset(
+        self, *, seed: int | None = None, options: Dict[str, Any] | ResetOptions | None = None
+    ):
         self.np_random, seed = seeding.np_random(seed)
 
-        self.last_reset_options = options
+        self.last_reset_options = options if isinstance(options, ResetOptions) else None
 
         super().reset(seed=seed)
 
-        self.state = FullState.initial(self.env_spec, options)
+        if not isinstance(options, ResetOptions):
+            raise TypeError("options must be ResetOptions")  # type: ignore[untyped-call]
+        reset_opts: ResetOptions = options
+
+        self.state = FullState.initial(self.env_spec, reset_opts)
 
         self.num_steps = 0
 
-        self.place_head(options)
+        self.place_head(reset_opts)
 
         self.env_candies.set_map_size(self.state.map_size)
-        self.calculate_obstacles_map(options)
+        self.calculate_obstacles_map(reset_opts)
         self.init_candies()
 
         info: InfoDict = {}
         obs: ObservationDict = self.state.to_obs(self.obs_keys)
-
         return obs, info
 
     def step(self, action_int: int):
@@ -101,9 +107,9 @@ class EnvEngine(gym.Env):
 
         truncated = self.num_steps >= self.env_spec.max_num_steps
 
-        obs: ObservationDict = self.state.to_obs(self.obs_keys)
+        observation: ObservationDict = self.state.to_obs(self.obs_keys)
 
-        return obs, current_reward, terminated, truncated, info
+        return observation, current_reward, terminated, truncated, info
 
     def get_position_on_path(self, distance_behind_head):
         if len(self.head_path) < 2:
@@ -168,6 +174,7 @@ class EnvEngine(gym.Env):
             reset_options.map_bitmap_path, self.env_spec.collision_map_resolution
         )
 
+        assert self.state is not None
         self.state.safe_map_snake = generate_safe_map(
             self.env_collision.obstacle_hit_distance, map_size, obstacles_map
         )
@@ -185,7 +192,7 @@ class EnvEngine(gym.Env):
         else:
             raise NotImplementedError(f"Render mode '{self.render_mode}' is not supported.")
 
-    def get_state(self) -> FullState:
+    def get_state(self) -> FullState | None:
         return deepcopy(self.state)
 
     def init_candies(self):

@@ -54,3 +54,11 @@ jobs:
         with:
           name: sssnake-dist
           path: dist/*
+      - name: Publish to TestPyPI
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
+        run: |
+          python -m pip install --upgrade twine
+          twine upload --repository testpypi dist/*

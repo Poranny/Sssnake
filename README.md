@@ -22,3 +22,12 @@ This repository consists of two integrated components:
 - NumPy
 - Pillow
 - CustomTkinter (for GUI)
+
+## Installation
+
+You can install the latest test version directly from TestPyPI:
+
+```bash
+pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ "sssnake[game]"
+```
+Or find it at https://test.pypi.org/project/sssnake/

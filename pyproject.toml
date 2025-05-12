@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sssnake"
-version = "1.0.4"
+version = "1.0.5"
 description = "RL-compatible snake environment + optional game interface"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -55,6 +55,7 @@ packages = [
     "sssnake",
     "sssnake.env",
     "sssnake.env.core",
+    "sssnake.env.textures",
     "sssnake.env.utils",
     "sssnake.game",
     "sssnake.game.controls",

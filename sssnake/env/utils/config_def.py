@@ -52,7 +52,7 @@ class ResetOptions:
     def from_dict(d: Mapping[str, Any]) -> ResetOptions:
         return ResetOptions(**{k: v for k, v in d.items()})
 
-    def iter(self) -> Iterator[Tuple[str, type, Any]]:
+    def iter(self) -> Iterator[Tuple[str, type[Any] | str | Any, Any]]:
         for f in fields(self):
             yield f.name, f.type, getattr(self, f.name)
 

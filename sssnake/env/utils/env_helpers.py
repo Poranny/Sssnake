@@ -6,6 +6,7 @@ from typing import Union
 
 import numpy as np
 from PIL import Image
+from PIL.Image import Resampling
 
 from sssnake.env.utils.config_def import EnvSpec, ResetOptions
 
@@ -14,7 +15,7 @@ def load_obstacles_map(path: Union[str, Path], col_res: int) -> np.ndarray:
     if not path or str(path) == "":
         return np.zeros((col_res, col_res), dtype=np.int8)
 
-    img = Image.open(path).convert("L").resize((col_res, col_res), Image.LANCZOS)
+    img = Image.open(path).convert("L").resize((col_res, col_res), Resampling.LANCZOS)
 
     arr = np.asarray(img, dtype=np.uint8)
     obstacles = (arr > 128).astype(np.int8)

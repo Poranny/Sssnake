@@ -51,7 +51,16 @@ ignore_missing_imports = true
 warn_unused_ignores = false
 
 [tool.setuptools]
-packages = ["sssnake"]
+packages = [
+    "sssnake",
+    "sssnake.env",
+    "sssnake.env.core",
+    "sssnake.env.utils",
+    "sssnake.game",
+    "sssnake.game.controls",
+    "sssnake.game.ui"
+]
+include-package-data = true
 
 [tool.setuptools.package-data]
 "sssnake.env.textures" = ["*.png", "*.jpg", "*.bmp"]

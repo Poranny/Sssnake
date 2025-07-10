@@ -66,11 +66,17 @@ class EnvEngine(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
 
         if options is not None:
-            self.last_reset_options = options
+            if isinstance(options, dict):
+                self.last_reset_options = ResetOptions.from_dict(options)
+            else:
+                self.last_reset_options = options
 
         super().reset(seed=seed)
 
-        reset_opts: ResetOptions = self.last_reset_options
+        if self.last_reset_options is None:
+            raise RuntimeError("ResetOptions not initialized.")
+
+        reset_opts = self.last_reset_options
 
         self.state = FullState.initial(self.env_spec, reset_opts)
 

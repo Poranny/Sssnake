@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from copy import deepcopy
+from importlib.resources import files
 from math import cos, radians, sin
 from typing import Any, Dict, List, Tuple
 
@@ -14,7 +15,7 @@ from sssnake.env.core.candies import EnvCandies
 from sssnake.env.core.collision import EnvCollision
 from sssnake.env.core.renderer import state_to_array
 from sssnake.env.utils.config_def import EnvSpec, ResetOptions
-from sssnake.env.utils.env_helpers import generate_safe_map, load_obstacles_map
+from sssnake.env.utils.env_helpers import generate_safe_map, load_obstacles_map, load_config
 from sssnake.env.utils.schema import DEFAULT_OBS_KEYS, build_observation_space
 from sssnake.env.utils.snake_action import SnakeAction
 from sssnake.env.utils.state_def import (
@@ -26,9 +27,19 @@ from sssnake.env.utils.state_def import (
 
 
 class EnvEngine(gym.Env):
-    def __init__(self, env_spec: EnvSpec, render_mode: str | None = None) -> None:
+    metadata = {
+        "render_modes": ["rgb_array"]
+    }
+
+    def __init__(self, env_spec: EnvSpec | None = None, render_mode: str | None = None) -> None:
         super().__init__()
         self.last_reset_options: ResetOptions | None = None
+
+        if env_spec is None:
+            default_json = files("sssnake.env.utils").joinpath("default_params.json")
+            env_spec, self.last_reset_options = load_config(jsonpath=str(default_json))
+
+        self.env_spec = env_spec
 
         if render_mode not in {None, "rgb_array"}:
             raise ValueError(f"Rendermode '{render_mode}' not supported.")
@@ -56,13 +67,12 @@ class EnvEngine(gym.Env):
     ):
         self.np_random, seed = seeding.np_random(seed)
 
-        self.last_reset_options = options if isinstance(options, ResetOptions) else None
+        if options is not None :
+            self.last_reset_options = options
 
         super().reset(seed=seed)
 
-        if not isinstance(options, ResetOptions):
-            raise TypeError("options must be ResetOptions")  # type: ignore[untyped-call]
-        reset_opts: ResetOptions = options
+        reset_opts: ResetOptions = self.last_reset_options
 
         self.state = FullState.initial(self.env_spec, reset_opts)
 

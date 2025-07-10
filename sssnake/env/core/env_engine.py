@@ -15,7 +15,7 @@ from sssnake.env.core.candies import EnvCandies
 from sssnake.env.core.collision import EnvCollision
 from sssnake.env.core.renderer import state_to_array
 from sssnake.env.utils.config_def import EnvSpec, ResetOptions
-from sssnake.env.utils.env_helpers import generate_safe_map, load_obstacles_map, load_config
+from sssnake.env.utils.env_helpers import generate_safe_map, load_config, load_obstacles_map
 from sssnake.env.utils.schema import DEFAULT_OBS_KEYS, build_observation_space
 from sssnake.env.utils.snake_action import SnakeAction
 from sssnake.env.utils.state_def import (
@@ -27,9 +27,7 @@ from sssnake.env.utils.state_def import (
 
 
 class EnvEngine(gym.Env):
-    metadata = {
-        "render_modes": ["rgb_array"]
-    }
+    metadata = {"render_modes": ["rgb_array"]}
 
     def __init__(self, env_spec: EnvSpec | None = None, render_mode: str | None = None) -> None:
         super().__init__()
@@ -67,7 +65,7 @@ class EnvEngine(gym.Env):
     ):
         self.np_random, seed = seeding.np_random(seed)
 
-        if options is not None :
+        if options is not None:
             self.last_reset_options = options
 
         super().reset(seed=seed)

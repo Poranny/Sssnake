@@ -1,1 +1,2 @@
-import sssnake.env
+import sssnake as sssnake
+import sssnake.env  # noqa: F401

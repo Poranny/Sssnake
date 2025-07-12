@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from math import radians, sin, cos
+from dataclasses import dataclass
+from math import cos, radians, sin
 from typing import Any, Dict, List, Sequence, Tuple
 
 import numpy as np
@@ -58,6 +58,7 @@ class FullState:
     def direction_vector(self) -> Tuple[float, float]:
         ang = radians(self.head_direction)
         return (sin(ang), cos(ang))
+
 
 ObservationDict = Dict[str, Any]
 InfoDict = Dict[str, Any]

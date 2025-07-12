@@ -30,7 +30,7 @@ def get_cached_sprite(base: Image.Image, size: int) -> Image.Image:
 
 
 def state_to_array(
-    render_state: RenderState, collision_bitmap_path: str = "", out_size: int = 400
+    render_state: RenderState, collision_bitmap_path: str = "", out_size: int = 320
 ) -> np.ndarray:
     if collision_bitmap_path:
         off = (

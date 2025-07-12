@@ -108,6 +108,7 @@ class EnvEngine(gym.Env):
         if self.env_collision.hit_anything(self.state):
             terminated = True
             obs: ObservationDict = self.state.to_obs(self.obs_keys)
+            current_reward = -1
             return obs, current_reward, terminated, truncated, info
 
         if self.env_candies.met_candy(self.state):

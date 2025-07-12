@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from math import radians, sin, cos
 from typing import Any, Dict, List, Sequence, Tuple
 
 import numpy as np
@@ -37,12 +38,26 @@ class FullState:
             ),
         )
 
-    def to_obs(self, keys: Sequence[str] | None = None) -> "ObservationDict":
-        raw: Dict[str, Any] = asdict(self)
-        if keys is None:
-            return raw
-        return {k: raw[k] for k in keys}
+    def to_obs(self, keys: Sequence[str] | None = None) -> ObservationDict:
+        obs: Dict[str, Any] = {
+            "head_position": self.head_position,
+            "head_direction_vec": self.direction_vector(),
+            "segments_num": self.segments_num,
+            "segments_positions": self.segments_positions,
+            "speed": self.speed,
+            "turnspeed": self.turnspeed,
+            "map_size": self.map_size,
+            "candy_position": self.candy_position,
+            "safe_map_snake": self.safe_map_snake,
+        }
 
+        if keys is None:
+            return obs
+        return {k: obs[k] for k in keys if k in obs}
+
+    def direction_vector(self) -> Tuple[float, float]:
+        ang = radians(self.head_direction)
+        return (sin(ang), cos(ang))
 
 ObservationDict = Dict[str, Any]
 InfoDict = Dict[str, Any]

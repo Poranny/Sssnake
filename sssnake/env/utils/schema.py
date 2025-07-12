@@ -13,7 +13,9 @@ OBS_SPACE_FACTORIES: Dict[str, SpaceFactory] = {
     "head_position": lambda spec: spaces.Box(
         low=0.0, high=spec.max_map_size, shape=(2,), dtype=np.float32
     ),
-    "head_direction": lambda _spec: spaces.Box(low=0.0, high=360.0, shape=(), dtype=np.float32),
+    "head_direction_vec": lambda _spec: spaces.Box(
+        low=-1.0, high=1.0, shape=(2,), dtype=np.float32
+    ),
     "candy_position": lambda spec: spaces.Box(
         low=0.0, high=spec.max_map_size, shape=(2,), dtype=np.float32
     ),

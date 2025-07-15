@@ -15,13 +15,13 @@ Action space is discrete and consists of three actions - turn left, turn right, 
 Key features include a configurable map (adjustable map size, obstacle layouts etc.), collision detection, rendering etc.
 
 
-## Dependencies
+### Dependencies
 - Gymnasium
 - NumPy
 - Pillow
 - CustomTkinter (for game's GUI)
 
-## Installation
+### Installation
 
 You can install the latest test version directly from TestPyPI:
 

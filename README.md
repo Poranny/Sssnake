@@ -2,7 +2,7 @@
  ![License](https://img.shields.io/github/license/Poranny/Sssnake)
 
 
-# Snake Gymnasium Environment
+# Sssnake Gymnasium Environment
 
 A highly configurable Gymnasium-based environment simulating a snake-like agent navigating a 2D space. The agent's goal is to collect candies to score points and avoid collisions (with its own growing tail, obstacles, and map boundaries).
 

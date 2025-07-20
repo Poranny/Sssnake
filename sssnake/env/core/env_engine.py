@@ -27,17 +27,23 @@ from sssnake.env.utils.state_def import (
 
 
 class EnvEngine(gym.Env):
+    """
+    Base gym env class.
+    """
+
     metadata = {"render_modes": ["rgb_array"]}
 
-    def __init__(self, env_spec: EnvSpec | None = None, render_mode: str | None = None) -> None:
+    def __init__(self, env_spec_in: EnvSpec | None = None, render_mode: str | None = None) -> None:
         super().__init__()
         self.last_reset_options: ResetOptions | None = None
 
-        if env_spec is None:
-            default_json = files("sssnake.env.utils").joinpath("default_params.json")
-            env_spec, self.last_reset_options = load_config(jsonpath=str(default_json))
+        default_json = files("sssnake.env.utils").joinpath("default_params.json")
+        env_spec_loaded, self.last_reset_options = load_config(jsonpath=str(default_json))
 
-        self.env_spec = env_spec
+        if env_spec_in is None:
+            env_spec = env_spec_loaded
+        else:
+            env_spec = env_spec_in
 
         if render_mode not in {None, "rgb_array"}:
             raise ValueError(f"Rendermode '{render_mode}' not supported.")
@@ -52,7 +58,7 @@ class EnvEngine(gym.Env):
         self.observation_space = build_observation_space(env_spec, self.obs_keys)
 
         self.env_spec = env_spec
-        self.state: FullState | None = None
+        self.state: FullState = FullState.initial(self.env_spec, self.last_reset_options)
 
         self.head_path: List[Tuple[float, float]] = []
         self.segment_length = self.env_spec.tail_segment_length
@@ -82,10 +88,10 @@ class EnvEngine(gym.Env):
 
         self.num_steps = 0
 
-        self.place_head(reset_opts)
+        self.place_head(reset_opts.start_pos_coords)
 
         self.env_candies.set_map_size(self.state.map_size)
-        self.calculate_obstacles_map(reset_opts)
+        self.prepare_collision_map(reset_opts)
         self.init_candies()
 
         info: InfoDict = {}
@@ -126,7 +132,58 @@ class EnvEngine(gym.Env):
 
         return observation, current_reward, terminated, truncated, info
 
+    def place_head(self, start_coords: Tuple[float, float]):
+        """
+        Initially sets the head's position.
+        """
+
+        self.state.head_position = (
+            start_coords[0] * self.state.map_size,
+            start_coords[1] * self.state.map_size,
+        )
+
+        self.head_path = [self.state.head_position]
+
+    def move_head(self):
+        """
+        Moves the head in accordance with its direction and speed.
+        """
+
+        ang = radians(self.state.head_direction)
+        dx, dy = sin(ang) * self.state.speed, cos(ang) * self.state.speed
+        x, y = self.state.head_position
+
+        self.state.head_position = (x + dx, y + dy)
+        self.head_path.append(self.state.head_position)
+
+    def apply_turn(self, action):
+        """
+        Apply the current turn's action.
+        """
+
+        if action is SnakeAction.LEFT:
+            self.state.head_direction += self.state.turnspeed
+        elif action is SnakeAction.RIGHT:
+            self.state.head_direction -= self.state.turnspeed
+        elif action is SnakeAction.NONE:
+            pass
+
+        self.state.head_direction %= 360.0
+
+    def update_body_segments(self):
+        """
+        Updates the positions of snake's body segments.
+        """
+
+        for i in range(self.state.segments_num):
+            distance_behind_head = (i + 1) * self.segment_length
+            self.state.segments_positions[i] = self.get_position_on_path(distance_behind_head)
+
     def get_position_on_path(self, distance_behind_head):
+        """
+        Calculates the position on snake's path for a certain distance behind head.
+        """
+
         if len(self.head_path) < 2:
             return self.head_path[0] if self.head_path else (0, 0)
 
@@ -149,6 +206,10 @@ class EnvEngine(gym.Env):
         return self.head_path[0]
 
     def add_segment(self):
+        """
+        Adds a segment to the snake's body on a certain position behind the last segment/head.
+        """
+
         if self.state.segments_num == 0:
             last_pos_x, last_pos_y = self.state.head_position
 
@@ -183,7 +244,10 @@ class EnvEngine(gym.Env):
         )
         self.state.segments_num += 1
 
-    def calculate_obstacles_map(self, reset_options: ResetOptions):
+    def prepare_collision_map(self, reset_options: ResetOptions):
+        """
+        Loads and sets up the obstacles map for snake's collision and EnvCandies candies generation.
+        """
         map_size = reset_options.map_size
         obstacles_map = load_obstacles_map(
             reset_options.map_bitmap_path, self.env_spec.collision_map_resolution
@@ -195,6 +259,15 @@ class EnvEngine(gym.Env):
         )
 
         self.env_candies.generate_free_cells_candy(obstacles_map)
+
+    def init_candies(self):
+        """
+        Initialize the rng in env_candies and set up the initial candy's position.
+        """
+
+        self.env_candies.set_rng(self.np_random)
+
+        self.state.candy_position = self.env_candies.random_candy_pos(self.state)
 
     def render(self):
         if self.render_mode is None:
@@ -209,36 +282,3 @@ class EnvEngine(gym.Env):
 
     def get_state(self) -> FullState | None:
         return deepcopy(self.state)
-
-    def init_candies(self):
-        self.env_candies.set_rng(self.np_random)
-
-        self.state.candy_position = self.env_candies.random_candy_pos(self.state)
-
-    def place_head(self, options):
-        start_coords = options.start_pos_coords
-        self.state.head_position = tuple(coord * self.state.map_size for coord in start_coords)
-
-        self.head_path = [self.state.head_position]
-
-    def apply_turn(self, action):
-        if action is SnakeAction.LEFT:
-            self.state.head_direction += self.state.turnspeed
-        elif action is SnakeAction.RIGHT:
-            self.state.head_direction -= self.state.turnspeed
-        elif action is SnakeAction.NONE:
-            pass
-
-        self.state.head_direction %= 360.0
-
-    def move_head(self):
-        ang = radians(self.state.head_direction)
-        dx, dy = sin(ang) * self.state.speed, cos(ang) * self.state.speed
-        x, y = self.state.head_position
-        self.state.head_position = (x + dx, y + dy)
-        self.head_path.append(self.state.head_position)
-
-    def update_body_segments(self):
-        for i in range(self.state.segments_num):
-            distance_behind_head = (i + 1) * self.segment_length
-            self.state.segments_positions[i] = self.get_position_on_path(distance_behind_head)

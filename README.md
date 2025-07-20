@@ -1,7 +1,8 @@
 [![CI](https://github.com/Poranny/Sssnake/actions/workflows/ci.yml/badge.svg)](https://github.com/Poranny/Sssnake/actions) [![codecov](https://codecov.io/gh/Poranny/Sssnake/graph/badge.svg?token=4ZCZJ67Y1Z)](https://codecov.io/gh/Poranny/Sssnake) ![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)
  ![License](https://img.shields.io/github/license/Poranny/Sssnake)
 
-# Snake Gymnasium Environment
+
+# Sssnake Gymnasium Environment
 
 A highly configurable Gymnasium-based environment simulating a snake-like agent navigating a 2D space. The agent's goal is to collect candies to score points and avoid collisions (with its own growing tail, obstacles, and map boundaries).
 
@@ -13,6 +14,10 @@ This repository consists of two main components:
 Action space is discrete and consists of three actions - turn left, turn right, or don't turn.
 
 Key features include a configurable map (adjustable map size, obstacle layouts etc.), collision detection, rendering etc.
+
+<p align="center">
+  <img src="sample_vids/basic_animation.gif" alt="Centered demo" width="300" />
+</p>
 
 
 ### Dependencies

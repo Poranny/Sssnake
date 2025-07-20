@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import math
 
 import numpy as np
@@ -8,6 +10,8 @@ from sssnake.env.utils.env_helpers import generate_safe_map
 
 class EnvCandies:
     def __init__(self, env_spec: EnvSpec):
+        self.rng: np.random.Generator | None = None
+
         self.candy_distance = env_spec.candy_collect_distance
         self.candy_wall_distance = env_spec.candy_pos_wall_distance
         self.candy_obstacle_distance = env_spec.candy_pos_obstacle_distance

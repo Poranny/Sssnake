@@ -12,6 +12,10 @@ from sssnake.env.utils.config_def import EnvSpec, ResetOptions
 
 
 def load_obstacles_map(path: Union[str, Path], col_res: int) -> np.ndarray:
+    """
+    Loads obstacles map from an image at given path, treating it as black-and-white.
+    """
+
     if not path or str(path) == "":
         return np.zeros((col_res, col_res), dtype=np.int8)
 
@@ -28,6 +32,9 @@ def generate_safe_map(
     map_size: float,
     obstacles_map: np.ndarray,
 ) -> np.ndarray:
+    """
+    Generates a safe map based on an obstacles map.
+    """
 
     obst = np.asarray(obstacles_map, dtype=np.int8)
     n = obst.shape[0]

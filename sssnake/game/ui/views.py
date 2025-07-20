@@ -9,6 +9,10 @@ from sssnake.env.utils.config_def import ResetOptions
 
 
 class MainView(CTkFrame):
+    """
+    CustomTkinter UI class.
+    """
+
     def __init__(self, master: Any, reset_options: ResetOptions) -> None:
         super().__init__(master)
         self.env_config: Any = None

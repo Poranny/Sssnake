@@ -4,6 +4,10 @@ from sssnake.env.utils.state_def import RenderState
 
 
 class GameLoop:
+    """
+    Class managing the game's loop, lifecycle, framerate.
+    """
+
     def __init__(self, master, app, env_engine, game_controls, renderer):
         self.app = app
         self.controls = game_controls

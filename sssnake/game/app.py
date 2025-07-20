@@ -16,6 +16,10 @@ from sssnake.game.ui.views import MainView
 
 
 class App:
+    """
+    Main game's class responsible for running the game.
+    """
+
     def __init__(self, headless: bool = False) -> None:
         self.app: CTk = CTk()
         self.app.title(GAMECONFIG.title)

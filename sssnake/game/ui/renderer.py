@@ -10,6 +10,10 @@ from sssnake.env.utils.state_def import RenderState
 
 
 class Renderer:
+    """
+    Responsible for rendering the game, using core.renderer for rendering of the state.
+    """
+
     def __init__(self, width: int, height: int):
         self.parent = None
         self.width = width

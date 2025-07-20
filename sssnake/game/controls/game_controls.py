@@ -1,4 +1,8 @@
 class GameControls:
+    """
+    Management of the user's input (key bindings, etc).
+    """
+
     left_keys = {"Left", "a"}
     right_keys = {"Right", "d"}
     all_keys = left_keys | right_keys

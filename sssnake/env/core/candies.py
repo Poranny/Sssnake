@@ -47,7 +47,7 @@ class EnvCandies:
             idx = self.rng.integers(available.shape[0])
             return tuple(available[idx])
 
-        return self.random_candy_pos_nomap() # Run when there are no available candy positions
+        return self.random_candy_pos_nomap()  # Run when there are no available candy positions
 
     def random_candy_pos_nomap(self):
         """

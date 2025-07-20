@@ -6,6 +6,10 @@ from sssnake.env.utils.state_def import FullState
 
 
 class EnvCollision:
+    """
+    Class responsible for detecting collision between the snake's head and a wall / obstacle / its own tail.
+    """
+
     def __init__(self, env_spec: EnvSpec) -> None:
         self.obstacles_map: List[Any] = []
         self.tail_hit_distance = env_spec.hit_tail_distance

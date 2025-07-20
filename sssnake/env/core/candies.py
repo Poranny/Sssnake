@@ -9,6 +9,10 @@ from sssnake.env.utils.env_helpers import generate_safe_map
 
 
 class EnvCandies:
+    """
+    Class responsible for managing the candies' generation, placement, and their collection.
+    """
+
     def __init__(self, env_spec: EnvSpec):
         self.rng: np.random.Generator | None = None
 
@@ -28,6 +32,10 @@ class EnvCandies:
         self.map_size = map_size
 
     def random_candy_pos(self, state):
+        """
+        Randomly chooses a candy position basing on the safe map.
+        """
+
         assert self.rng is not None
 
         head = state.head_position
@@ -39,9 +47,13 @@ class EnvCandies:
             idx = self.rng.integers(available.shape[0])
             return tuple(available[idx])
 
-        return self.random_candy_pos_nomap()
+        return self.random_candy_pos_nomap() # Run when there are no available candy positions
 
     def random_candy_pos_nomap(self):
+        """
+        Randomly chooses a candy position within the map's size.
+        """
+
         assert self.rng is not None, "RNG not set – call set_rng() from EnvEngine.reset()"
 
         min_dist = self.candy_wall_distance
@@ -57,6 +69,10 @@ class EnvCandies:
         return math.hypot(hpx - cpx, hpy - cpy) < self.candy_distance
 
     def generate_free_cells_candy(self, obstacles_map):
+        """
+        Generates free cells for candy placement based on the obstacles map.
+        """
+
         n = obstacles_map.shape[0]
 
         candy_margin_wall = max(int(self.candy_wall_distance * (n / self.map_size)), 1)
